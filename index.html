@@ -52,7 +52,7 @@
             // --- SERVICE WORKER ---
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    const CACHE_NAME = 'ace-flow-cache-v74'; // Cache version bumped
+                    const CACHE_NAME = 'ace-flow-cache-v75'; // Cache version bumped
                     const PRECACHE_ASSETS = [
                         '.',
                         'https://cdn.tailwindcss.com',
@@ -232,6 +232,12 @@
         .faq-question.active .faq-toggle-icon {
             transform: rotate(45deg);
         }
+        .faq-icon {
+            transition: transform 0.3s ease;
+        }
+        .faq-question.active .faq-icon {
+            transform: scale(1.1) rotate(-5deg);
+        }
 
         /* Shine/Pulse Animation for CTA */
         .btn-shine {
@@ -321,7 +327,6 @@
 
 <body class="antialiased">
 
-    <!-- LANDING PAGE REMODELADA -->
     <div id="landingPage">
         <div class="container mx-auto px-4 py-16 md:py-24 text-center">
             <header class="mb-20">
@@ -334,16 +339,11 @@
             <div class="space-y-24">
                 <section class="fade-in-section">
                     <h2 class="text-4xl font-extrabold mb-12">Inteligência de Dados para Ações Precisas</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         <div class="feature-card p-8">
                             <div class="text-5xl mb-4">📊</div>
                             <h3 class="text-xl font-bold mb-2">Relatórios Completos</h3>
                             <p class="text-text-muted">Transforme seus dados em insights visuais. Gere relatórios dinâmicos e analise sua produtividade através de filtros de tempo flexíveis, do trabalho diário ao desempenho anual.</p>
-                        </div>
-                        <div class="feature-card p-8">
-                            <div class="text-5xl mb-4">✨</div>
-                            <h3 class="text-xl font-bold mb-2">Análise com IA</h3>
-                            <p class="text-text-muted">Receba resumos e planos de ação gerados por Inteligência Artificial para otimizar suas visitas e focar em áreas de risco.</p>
                         </div>
                         <div class="feature-card p-8">
                             <div class="text-5xl mb-4">📋</div>
@@ -390,8 +390,8 @@
                     <div class="grid grid-cols-1">
                          <div class="feature-card p-8 max-w-2xl mx-auto">
                             <div class="text-5xl mb-4">💡</div>
-                            <h3 class="text-xl font-bold mb-2">Guia de Curiosidades</h3>
-                            <p class="text-text-muted">Domine o conhecimento. Acesse um guia completo que vai de dúvidas básicas a curiosidades avançadas sobre a Dengue e o Aedes. Uma ferramenta poderosa para sua capacitação e para orientar a população.</p>
+                            <h3 class="text-xl font-bold mb-2">Guia de Conhecimento</h3>
+                            <p class="text-text-muted">Conhecimento é sua melhor ferramenta. Acesse um guia completo sobre endemias, vetores e vigilância para agir com mais segurança e precisão. Fortaleça sua autoridade em campo e proteja a comunidade com informação de qualidade.</p>
                         </div>
                     </div>
                 </section>
@@ -413,12 +413,10 @@
         </div>
     </div>
     
-    <!-- BARRA DE INFORMAÇÃO FIXA -->
     <div id="fixed-info-bar" class="bg-white/80 backdrop-blur-sm p-2 text-center text-sm font-semibold hidden">
         <span id="fixed-agent-name"></span> - <span id="fixed-property-info"></span>
     </div>
     
-    <!-- MODAL DE LOGIN -->
     <div id="loginModal" class="fixed inset-0 z-50 modal hidden">
         <div class="bg-white rounded-lg shadow-xl p-8 w-11/12 max-w-sm card">
             <h2 class="text-2xl font-bold text-center mb-1">Bem-vindo ao</h2>
@@ -438,7 +436,6 @@
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL DO APP -->
     <main class="container mx-auto p-3 md:p-6 max-w-4xl hidden">
         <header class="text-center mb-8 py-4">
             <h1 class="text-5xl font-extrabold"><strong>ACE FLOW</strong></h1>
@@ -544,24 +541,16 @@
         </section>
         
         <section class="card p-4 md:p-6 mb-6">
-            <details id="backupModule" class="group">
-                <summary class="section-title cursor-pointer flex justify-between items-center">
-                    Backup & Restauração
-                    <span class="text-2xl font-bold text-khaki-base transition-transform duration-300 group-open:rotate-45">+</span>
-                </summary>
-                <div class="mt-4 border-t pt-4 flex flex-col md:flex-row gap-4">
-                    <button id="backupBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white flex-1">Faça Backup (para não perder seu histórico)</button>
-                    <label for="restoreInput" class="btn bg-green-700 hover:bg-green-800 text-white flex-1">
-                        Restaurar Backup
-                    </label>
-                    <input type="file" id="restoreInput" class="hidden" accept=".json">
-                </div>
-            </details>
-        </section>
-
-        <section class="card p-4 md:p-6 mb-6">
             <h2 class="section-title border-b border-border-color pb-3 mb-4">Informações do Dia</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="cidade" class="text-sm font-medium text-text-muted">Cidade</label>
+                    <input type="text" id="cidade" list="cidade-suggestions" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label for="estado" class="text-sm font-medium text-text-muted">Estado/UF</label>
+                    <input type="text" id="estado" list="estado-suggestions" class="form-input mt-1" required>
+                </div>
                 <div>
                     <label for="agente" class="text-sm font-medium text-text-muted">Agente</label>
                     <input type="text" id="agente" list="agent-suggestions" class="form-input mt-1" required>
@@ -598,36 +587,53 @@
         <footer class="my-6 space-y-4">
             <div class="grid grid-cols-2 gap-4">
                 <button id="savePdfBtn" class="btn bg-green-800 hover:bg-green-900 text-white">Gerar PDF</button>
-                <button id="reportBtn" class="btn bg-purple-900 hover:bg-purple-950 text-white">Gerar Relatório</button>
+                <button id="reportBtn" class="btn bg-purple-900 hover:bg-purple-950 text-white">Pesquisar Dados</button>
                 <button id="myAreaBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white">Minha Área</button>
                 <button id="clearDayBtn" class="btn bg-red-700 hover:bg-red-800 text-white">Limpar Dia</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <button id="aiCombinedAnalysisBtn" class="btn bg-blue-800 hover:bg-blue-900 text-white text-lg">Análise e Plano Estratégico ✨</button>
+            <div class="grid grid-cols-1">
                  <button id="curiositiesBtn" class="btn bg-teal-600 text-white hover:bg-teal-700 text-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    15 Curiosidades...
+                    Dúvidas e Curiosidades
                 </button>
             </div>
              <div id="subButtonsContainer" class="hidden mt-4 space-y-3 md:col-span-2">
-                 <p class="text-center text-text-muted max-w-2xl mx-auto">A informação correta é a nossa arma mais poderosa contra a dengue. Com o aumento dos casos, é vital que todos conheçam os detalhes sobre a doença, o mosquito transmissor e o papel crucial dos profissionais que estão na linha de frente deste combate.</p>
+                 <p class="text-center text-text-muted max-w-2xl mx-auto">Agente, o conhecimento é a sua principal ferramenta de trabalho. Dominar informações sobre endemias, vigilância, saneamento e saúde pública é vital para agir com segurança, precisão e impacto. Quanto mais você entende sua área de atuação, mais eficaz será sua prevenção e mais vidas poderá proteger. A ignorância, nesse campo, não é só uma falha — é um risco para toda a comunidade. Conhecer é salvar.</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button id="showBasicKnowledgeBtn" class="btn bg-blue-500 text-white hover:bg-blue-600 flex-1">Conhecimento Básico do ACE</button>
                     <button id="showDengueModalBtn" class="btn bg-orange-500 text-white hover:bg-orange-600 flex-1">Aprenda mais sobre a Dengue</button>
                     <button id="showAedesModalBtn" class="btn bg-gray-700 text-white hover:bg-gray-800 flex-1">Aprenda mais sobre o Aedes Aegypti</button>
                 </div>
             </div>
         </footer>
         
+        <section class="card p-4 md:p-6 mb-6">
+            <details id="backupModule" class="group">
+                <summary class="section-title cursor-pointer flex justify-between items-center">
+                    Backup & Restauração
+                    <span class="text-2xl font-bold text-khaki-base transition-transform duration-300 group-open:rotate-45">+</span>
+                </summary>
+                <div class="mt-4 border-t pt-4 flex flex-col md:flex-row gap-4">
+                    <button id="backupBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white flex-1">Faça Backup (para não perder seu histórico)</button>
+                    <label for="restoreInput" class="btn bg-green-700 hover:bg-green-800 text-white flex-1">
+                        Restaurar Backup
+                    </label>
+                    <input type="file" id="restoreInput" class="hidden" accept=".json">
+                </div>
+            </details>
+        </section>
+
         <footer class="text-center mt-12 py-8 border-t-2 border-dashed border-border-color">
             <h2 class="text-4xl font-extrabold text-khaki-base glow-text">ACE FLOW</h2>
             <p class="text-text-muted mt-2">Obrigado por utilizar nossa ferramenta. Seu trabalho é fundamental para a saúde de todos.</p>
         </footer>
     </main>
     
-    <!-- DATALISTS E MODAIS -->
     <datalist id="agent-suggestions"></datalist>
     <datalist id="bairro-suggestions"></datalist>
     <datalist id="street-suggestions"></datalist>
+    <datalist id="cidade-suggestions"></datalist>
+    <datalist id="estado-suggestions"></datalist>
 
     <div id="confirmationModal" class="fixed inset-0 z-50 modal hidden">
         <div class="card p-6 w-11/12 max-w-sm text-center">
@@ -642,11 +648,10 @@
     <div id="reportModal" class="fixed inset-0 z-50 modal hidden">
          <div class="card p-4 md:p-6 w-11/12 max-w-6xl max-h-[90vh] flex flex-col">
             <header class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 class="section-title">Relatórios Inteligentes</h2>
+                <h2 class="section-title">Pesquisar Dados</h2>
                 <button id="closeReportModalBtn" class="text-3xl font-bold">&times;</button>
             </header>
             <div id="reportModalBody" class="flex-grow overflow-y-auto pr-2">
-                <!-- Filtros -->
                 <div class="flex flex-col md:flex-row gap-4 mb-4 pb-4 border-b">
                     <div class="flex-1">
                         <label for="reportStartDate" class="font-semibold text-sm">De:</label>
@@ -663,30 +668,17 @@
                         </button>
                     </div>
                 </div>
-                <!-- Conteúdo do Relatório -->
                 <div id="reportContent" class="space-y-6">
                      <div id="no-report-data" class="text-center my-8 text-text-muted">
                         <p class="font-bold text-lg">Selecione um período para gerar o relatório.</p>
                     </div>
                     <div id="reportDataContainer" class="hidden space-y-6">
-                        <!-- Cards de dados aqui -->
                     </div>
                 </div>
             </div>
             <footer id="reportFooter" class="mt-6 pt-4 border-t flex justify-end gap-3 hidden">
                 <button id="downloadReportPdfBtn" class="btn bg-red-700 hover:bg-red-800 text-white">Baixar PDF</button>
             </footer>
-        </div>
-    </div>
-    
-    <div id="aiModal" class="fixed inset-0 z-50 modal hidden">
-         <div class="card p-4 md:p-6 w-11/12 max-w-2xl max-h-[90vh] flex flex-col">
-            <header class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 id="aiModalTitle" class="section-title">Análise da Inteligência Artificial</h2>
-                <button id="closeAiModalBtn" class="text-3xl font-bold">&times;</button>
-            </header>
-            <div id="aiModalContent" class="flex-grow overflow-y-auto prose max-w-none prose-p:my-2 prose-headings:my-3">
-            </div>
         </div>
     </div>
     
@@ -704,9 +696,9 @@
         </div>
     </div>
 
-    <!-- MODAIS DE CURIOSIDADES -->
     <div id="dengueModal" class="fixed inset-0 z-50 modal hidden"></div>
     <div id="aedesModal" class="fixed inset-0 z-50 modal hidden"></div>
+    <div id="basicKnowledgeModal" class="fixed inset-0 z-50 modal hidden"></div>
 
 
     <script>
@@ -743,6 +735,8 @@
         const loginError = document.getElementById('loginError');
         const agenteInput = document.getElementById('agente');
         const bairroInput = document.getElementById('bairro');
+        const cidadeInput = document.getElementById('cidade');
+        const estadoInput = document.getElementById('estado');
         const cicloSelect = document.getElementById('ciclo');
         const dataInput = document.getElementById('data');
         const visitasContainer = document.getElementById('visitasContainer');
@@ -776,11 +770,6 @@
         const dailyGoalEl = document.getElementById('dailyGoal');
         const dailyProgressEl = document.getElementById('dailyProgress');
         const progressTextEl = document.getElementById('progressText');
-        const aiCombinedAnalysisBtn = document.getElementById('aiCombinedAnalysisBtn');
-        const aiModal = document.getElementById('aiModal');
-        const aiModalTitle = document.getElementById('aiModalTitle');
-        const aiModalContent = document.getElementById('aiModalContent');
-        const closeAiModalBtn = document.getElementById('closeAiModalBtn');
         const calculateVolumeBtn = document.getElementById('calculateVolumeBtn');
         const clearVolumeBtn = document.getElementById('clearVolumeBtn');
         const volumeResultDiv = document.getElementById('volumeResult');
@@ -803,10 +792,13 @@
         // Seletores de Curiosidades
         const curiositiesBtn = document.getElementById('curiositiesBtn');
         const subButtonsContainer = document.getElementById('subButtonsContainer');
+        const showBasicKnowledgeBtn = document.getElementById('showBasicKnowledgeBtn');
         const showDengueModalBtn = document.getElementById('showDengueModalBtn');
         const showAedesModalBtn = document.getElementById('showAedesModalBtn');
         const dengueModal = document.getElementById('dengueModal');
         const aedesModal = document.getElementById('aedesModal');
+        const basicKnowledgeModal = document.getElementById('basicKnowledgeModal');
+
 
         // --- LÓGICA DA LANDING PAGE E PWA ---
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -1178,7 +1170,14 @@
 
         const saveData = () => {
              const data = {
-                 header: { agente: agenteInput.value, bairro: bairroInput.value, ciclo: cicloSelect.value, data: dataInput.value },
+                 header: { 
+                    agente: agenteInput.value, 
+                    bairro: bairroInput.value, 
+                    cidade: cidadeInput.value,
+                    estado: estadoInput.value,
+                    ciclo: cicloSelect.value, 
+                    data: dataInput.value 
+                },
                  visits: []
              };
              document.querySelectorAll('.visita-card').forEach(card => {
@@ -1209,8 +1208,11 @@
             const rowsToCreate = (data && data.visits.length > INITIAL_ROWS) ? data.visits.length : INITIAL_ROWS;
             for(let i = 0; i < rowsToCreate; i++) addVisitaCard();
             if (!data) return;
+            
             agenteInput.value = data.header.agente || agenteInput.value;
             bairroInput.value = data.header.bairro || '';
+            cidadeInput.value = data.header.cidade || '';
+            estadoInput.value = data.header.estado || '';
             cicloSelect.value = data.header.ciclo || '';
             
             // Correct date initialization
@@ -1220,7 +1222,7 @@
             const day = String(today.getDate()).padStart(2, '0');
             dataInput.value = data.header.data || `${year}-${month}-${day}`;
 
-            [agenteInput, bairroInput, cicloSelect, dataInput].forEach(el => { if(el.value) el.classList.add('is-filled'); });
+            [agenteInput, bairroInput, cidadeInput, estadoInput, cicloSelect, dataInput].forEach(el => { if(el.value) el.classList.add('is-filled'); });
             data.visits.forEach((visitData, index) => {
                 const card = visitasContainer.children[index];
                 if (!card) return;
@@ -1282,7 +1284,7 @@
                 return;
             }
 
-            const { agente, bairro, ciclo, data: workDate } = data.header;
+            const { agente, bairro, ciclo, data: workDate, cidade, estado } = data.header;
             const dateFormatted = new Date(workDate + 'T12:00:00').toLocaleDateString('pt-BR');
             
             const primaryColor = '#111827';
@@ -1305,6 +1307,7 @@
                 body: [
                     [{content: 'Agente:', styles: {fontStyle: 'bold', textColor: primaryColor}}, agente],
                     [{content: 'Data:', styles: {fontStyle: 'bold', textColor: primaryColor}}, dateFormatted],
+                    [{content: 'Cidade/UF:', styles: {fontStyle: 'bold', textColor: primaryColor}}, `${cidade} / ${estado}`],
                     [{content: 'Bairro Principal:', styles: {fontStyle: 'bold', textColor: primaryColor}}, bairro],
                     [{content: 'Ciclo:', styles: {fontStyle: 'bold', textColor: primaryColor}}, ciclo]
                 ],
@@ -1385,72 +1388,6 @@
             }
         };
         
-        const callAiAPI = async (prompt) => {
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) {
-                    const errorBody = await response.json();
-                    throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error.message}`);
-                }
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    return result.candidates[0].content.parts[0].text;
-                } else {
-                    console.warn("Resposta da API de IA com estrutura inesperada:", result);
-                    if (result.promptFeedback && result.promptFeedback.blockReason) {
-                        return `O conteúdo não pôde ser gerado. Motivo: ${result.promptFeedback.blockReason}`;
-                    }
-                    return "Não foi possível obter uma resposta da IA. A estrutura da resposta estava vazia.";
-                }
-            } catch (error) {
-                console.error("Erro ao chamar a API de IA:", error);
-                return `Erro de comunicação com a IA. Por favor, verifique sua conexão com a internet. Detalhes: ${error.message}`;
-            }
-        };
-        
-        const handleAiCombinedAnalysis = async () => {
-            aiModalTitle.textContent = "Análise e Plano Estratégico";
-            aiModalContent.innerHTML = `<div class="flex justify-center items-center h-full"><div class="loader"></div></div>`;
-            aiModal.classList.remove('hidden');
-
-            const summaryData = getSummaryData();
-            const visitData = JSON.parse(localStorage.getItem('aceFlowDailyData'))?.visits || [];
-            const filledVisits = visitData.filter(v => v.logradouro && v.visita);
-
-            const prompt = `
-                Você é um supervisor de saúde pública e epidemiologista. Sua missão é criar um relatório consolidado para um Agente de Combate a Endemias. O relatório deve ter duas seções claras, formatadas em Markdown:
-
-                1.  **Análise de Desempenho do Dia:**
-                    * Com base nos dados de resumo do dia, escreva um resumo narrativo em 2 parágrafos.
-                    * Destaque as conquistas (ex: número de imóveis trabalhados, quarteirões concluídos, poucos focos).
-                    * Aponte áreas que precisam de atenção (ex: focos encontrados, recusas, imóveis fechados).
-                    * Termine com uma nota positiva e encorajadora.
-
-                2.  **Plano de Ação Estratégico para Amanhã:**
-                    * Com base na lista de visitas, identifique hotspots de focos, padrões de tratamento e pendências críticas (imóveis fechados perto de focos).
-                    * Crie um plano de ação prático em bullet points, com as seguintes subseções:
-                        * **Prioridade 1 (Alerta Vermelho):** Ruas/quarteirões com focos para varredura intensiva.
-                        * **Prioridade 2 (Atenção):** Áreas com muitos tratamentos ou pendências, sugerindo horários alternativos para revisita.
-                        * **Continuidade:** Qual quarteirão continuar no ciclo normal.
-
-                **Dados para Análise:**
-                -   **Resumo do Dia:** ${JSON.stringify(summaryData, null, 2)}
-                -   **Lista de Visitas para Planejamento:** ${JSON.stringify(filledVisits.map(({bairro, logradouro, quarteirao, visita, foco, trat}) => ({bairro, logradouro, quarteirao, visita, foco, trat})), null, 2)}
-            `;
-            const result = await callAiAPI(prompt);
-            aiModalContent.innerHTML = result.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        };
-
         const animateValue = (element, start, end, duration, isFloat = false) => {
             if (!element) return;
             let startTimestamp = null;
@@ -1552,12 +1489,14 @@
             reportDataContainer.innerHTML = `
                 <div>
                     <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Detalhes dos Imóveis Trabalhados</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         ${createCard('Residências', summary.residencia, '', 'text-blue-600', 0)}
                         ${createCard('Comércios', summary.comercio, '', 'text-purple-600', 50)}
                         ${createCard('Ter. Baldios', summary.terrenoBaldio, '', 'text-yellow-600', 100)}
                         ${createCard('Outros', summary.outro, '', 'text-gray-600', 150)}
-                        ${createCard('Total', summary.trabalhado, '', 'text-green-600 font-black', 200)}
+                    </div>
+                    <div class="mt-4">
+                        ${createCard('Total Trabalhados', summary.trabalhado, '', 'text-green-600 font-black', 200)}
                     </div>
                 </div>
                 <div>
@@ -1581,10 +1520,6 @@
                     <h3 class="font-bold text-lg text-center mb-2 text-red-600">Pontos de Atenção (Focos)</h3>
                     <div id="hotspotContent"></div>
                 </div>
-                <div class="card p-4">
-                    <h3 class="font-bold text-lg text-center mb-2 text-blue-600">Análise Inteligente do Período ✨</h3>
-                    <div id="aiReportContent" class="prose max-w-none prose-p:my-2 prose-headings:my-3"></div>
-                </div>
             `;
             
             // Animate values
@@ -1592,7 +1527,7 @@
             animateValue(document.getElementById('report-card-Comércios'), 0, summary.comercio, 1000);
             animateValue(document.getElementById('report-card-Ter--Baldios'), 0, summary.terrenoBaldio, 1000);
             animateValue(document.getElementById('report-card-Outros'), 0, summary.outro, 1000);
-            animateValue(document.getElementById('report-card-Total'), 0, summary.trabalhado, 1000);
+            animateValue(document.getElementById('report-card-Total-Trabalhados'), 0, summary.trabalhado, 1000);
             animateValue(document.getElementById('report-card-Trat--Focal'), 0, summary.tratamentoFocal, 1000);
             animateValue(document.getElementById('report-card-Larvicida'), 0, summary.gramas, 1000, true);
             animateValue(document.getElementById('report-card-Dep--Tratados'), 0, summary.depositosTratados, 1000);
@@ -1615,21 +1550,6 @@
             } else {
                 hotspotContent.innerHTML = '<p class="text-center text-green-600 font-semibold">Nenhum foco encontrado no período. Excelente trabalho!</p>';
             }
-
-            // Render AI Analysis
-            const aiReportContent = document.getElementById('aiReportContent');
-            aiReportContent.innerHTML = `<div class="flex justify-center items-center h-full"><div class="loader"></div></div>`;
-            const prompt = `
-                Você é um supervisor de saúde pública analisando os dados de um Agente de Combate a Endemias para o período de ${startDate} a ${endDate}.
-                Com base no resumo de dados a seguir, escreva uma análise profissional e elaborada em 2 ou 3 parágrafos.
-                Destaque os pontos positivos (ex: alto número de imóveis trabalhados, poucos focos), identifique os pontos de atenção (ex: alta incidência de focos em certas áreas, muitas recusas) e conclua com recomendações estratégicas para o agente.
-                Seja técnico, mas claro. Formate usando Markdown.
-
-                Dados do período:
-                ${JSON.stringify(summary)}
-            `;
-            const aiResult = await callAiAPI(prompt);
-            aiReportContent.innerHTML = aiResult.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         };
         
         const handleVolumeCalculation = () => {
@@ -1877,8 +1797,6 @@
             });
         });
         
-        aiCombinedAnalysisBtn.addEventListener('click', handleAiCombinedAnalysis);
-        closeAiModalBtn.addEventListener('click', () => aiModal.classList.add('hidden'));
         myAreaBtn.addEventListener('click', displayMyArea);
         closeSectorModalBtn.addEventListener('click', () => sectorModal.classList.add('hidden'));
 
@@ -1918,7 +1836,7 @@
                     doc.setFontSize(18);
                     doc.setTextColor('#FFFFFF');
                     doc.setFont('helvetica', 'bold');
-                    doc.text("Relatório Inteligente de Período", 105, 12, { align: 'center' });
+                    doc.text("Compilado de dados desse período", 105, 12, { align: 'center' });
                     // Rodapé
                     doc.setFontSize(8);
                     doc.setTextColor(headerFooterColor);
@@ -2004,25 +1922,6 @@
                     finalY += (splitText.length * 8) + 3; // Adjust spacing
                 });
             }
-
-            // Seção de Análise da IA
-            const aiText = document.getElementById('aiReportContent').innerText;
-            if (aiText && aiText !== 'Carregando...') {
-                finalY += 10;
-                if (finalY > pageHeight - 30) { doc.addPage(); finalY = 30; }
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Análise Inteligente do Período', 15, finalY);
-                finalY += 10;
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'normal');
-                const splitText = doc.splitTextToSize(aiText, 180);
-                splitText.forEach(line => {
-                     if (finalY > pageHeight - 20) { doc.addPage(); finalY = 30; }
-                     doc.text(line, 15, finalY);
-                     finalY += 8;
-                });
-            }
             
             addHeaderFooter();
             doc.save(`relatorio_periodo_${agentName.split(' ')[0]}_${new Date().toISOString().slice(0,10)}.pdf`);
@@ -2053,7 +1952,11 @@
         mainContent.addEventListener('blur', (e) => {
             const target = e.target;
             if (target.matches('input[type="text"]') && target.value) {
-                target.value = formatAndCorrectText(target.value);
+                if(target.id === 'estado' && target.value.length === 2) {
+                    target.value = target.value.toUpperCase();
+                } else {
+                    target.value = formatAndCorrectText(target.value);
+                }
             }
             
             // --- LÓGICA DE REPLICAÇÃO INTELIGENTE APRIMORADA ---
@@ -2190,8 +2093,9 @@
                             <span class="font-semibold text-gray-800">${index + 1}. ${item.q}</span>
                             <span class="faq-toggle-icon text-2xl text-gray-400 transition-transform duration-300">+</span>
                         </div>
-                        <div class="faq-answer text-gray-600 leading-relaxed">
-                           ${item.a}
+                        <div class="faq-answer text-gray-600 leading-relaxed flex items-center gap-4">
+                           ${item.icon ? `<div class="flex-shrink-0 w-16 h-16 flex items-center justify-center faq-icon">${item.icon}</div>` : ''}
+                           <p>${item.a}</p>
                         </div>
                     </div>
                 `;
@@ -2205,7 +2109,6 @@
                     </header>
                     <div class="flex-grow overflow-y-auto p-6">
                         <p class="mb-6 text-text-muted">${intro}</p>
-                        <h3 class="text-xl font-bold mb-4 text-center">Tire suas Dúvidas: O Guia Definitivo sobre Dengue e Aedes aegypti</h3>
                         <div class="bg-white rounded-lg shadow-inner">
                            ${qnaHTML}
                         </div>
@@ -2227,46 +2130,67 @@
             }
         });
 
+        showBasicKnowledgeBtn.addEventListener('click', () => {
+            const qna = [
+                {q: "O que é uma endemia e como ela se diferencia de uma epidemia e de uma pandemia?", a: "➡️ Endemia é a presença constante de uma doença em uma região (ex: leishmaniose no Nordeste).<br>➡️ Epidemia é o aumento repentino de casos acima do esperado.<br>➡️ Pandemia é uma epidemia que se espalha por vários países ou continentes.<br>📚 Fonte: Ministério da Saúde, OPAS.", icon: '<span class="text-5xl">🌍</span>'},
+                {q: "O que faz parte da rotina mínima de um ACE segundo o Ministério da Saúde?", a: "➡️ Visita domiciliar, eliminação de criadouros, notificação de casos suspeitos, educação em saúde, levantamento de índice entomológico, tratamento focal, atividades em pontos estratégicos. 📚 Fonte: PNCD / Ministério da Saúde.", icon: '<span class="text-5xl">📋</span>'},
+                {q: "O que é leishmaniose visceral e como ela é transmitida?", a: "➡️ Causada pelo protozoário Leishmania chagasi, transmitida pela picada do mosquito-palha (Lutzomyia longipalpis). Causa febre prolongada, emagrecimento, aumento do fígado e baço. O cão é o principal reservatório urbano. 📚 Fonte: Fiocruz, MS.", icon: '<span class="text-5xl">🦟</span>'},
+                {q: "Como ocorre a transmissão da leptospirose e quais seus principais sintomas?", a: "➡️ Transmitida pela urina de roedores contaminados, especialmente em enchentes. Causa febre, dor muscular, calafrios, podendo evoluir para formas graves com insuficiência renal e hemorragias. 📚 Fonte: Ministério da Saúde, Fundação Oswaldo Cruz.", icon: '<span class="text-5xl">🐀</span>'},
+                {q: "Qual a função do ACE na prevenção da leishmaniose visceral?", a: "➡️ Orientar a população sobre cuidados com cães, higiene dos quintais, eliminar matéria orgânica e notificar cães suspeitos. Ajudar em campanhas de vacinação e coleiras impregnadas. 📚 Fonte: MS, UFPI.", icon: '<span class="text-5xl">🐶</span>'},
+                {q: "O que é vigilância entomológica e por que ela é fundamental no controle de vetores?", a: "➡️ É o monitoramento da presença, densidade e comportamento de insetos vetores de doenças. Fundamenta decisões sobre ações químicas, biológicas e educativas. 📚 Fonte: Ministério da Saúde.", icon: '<span class="text-5xl">🔬</span>'},
+                {q: "Quais zoonoses urbanas são mais comuns no Brasil e o que um ACE deve saber sobre elas?", a: "➡️ Leptospirose, raiva, leishmaniose, toxoplasmose e esporotricose. O ACE deve conhecer vias de transmissão, medidas preventivas e como agir frente a casos suspeitos. 📚 Fonte: Universidade Federal de Pelotas, MS.", icon: '<span class="text-5xl">🐾</span>'},
+                {q: "O que é raiva humana e como o ACE contribui na prevenção?", a: "➡️ É causada por um vírus transmitido por mordidas de animais infectados (cães, gatos, morcegos). O ACE ajuda na vigilância de animais e campanhas de vacinação antirrábica e orientação à população. 📚 Fonte: OMS, Ministério da Saúde.", icon: '<span class="text-5xl">🦇</span>'},
+                {q: "O que é vigilância ambiental em saúde e qual o papel do ACE nesse contexto?", a: "➡️ É o conjunto de ações que visa identificar fatores ambientais que interferem na saúde humana. O ACE atua na inspeção de ambientes com risco de proliferação de vetores, como córregos, terrenos baldios, áreas alagadas. 📚 Fonte: Portaria GM/MS nº 1.172/2004.", icon: '<span class="text-5xl">🏞️</span>'},
+                {q: "Como o saneamento básico influencia diretamente no controle de endemias?", a: "➡️ A falta de esgoto, coleta de lixo e água tratada favorece proliferação de roedores, mosquitos e outros vetores. O ACE deve promover a conscientização comunitária e cobrar políticas públicas de saneamento. 📚 Fonte: UFBA, Ministério da Saúde.", icon: '<span class="text-5xl">🚽</span>'},
+                {q: "Qual é a importância da ética e do sigilo profissional no trabalho do ACE?", a: "➡️ O ACE lida com dados sensíveis (saúde, condições sanitárias, denúncias), sendo obrigado a manter sigilo. A ética garante respeito, confiança da população e segurança nas ações. 📚 Fonte: Código de Ética dos Servidores Públicos, Ministério da Saúde.", icon: '<span class="text-5xl">🤫</span>'},
+                {q: "Como agir em situações de recusa de visita domiciliar por parte da população?", a: "➡️ Manter postura ética, educada e respeitosa; explicar os riscos e a importância da visita. Notificar a recusa e, se necessário, acionar a supervisão para medidas legais e administrativas. 📚 Fonte: Boletins Técnicos da Vigilância em Saúde.", icon: '<span class="text-5xl">🤝</span>'},
+                {q: "Quais EPIs (Equipamentos de Proteção Individual) são obrigatórios para o ACE?", a: "➡️ Calçado fechado, luvas, máscara, protetor solar, camisa de manga comprida e crachá visível. O uso correto previne acidentes, intoxicações e contaminações. 📚 Fonte: NR-6 (Norma Regulamentadora), Ministério do Trabalho e Emprego.", icon: '<span class="text-5xl">⛑️</span>'},
+                {q: "Qual a diferença entre controle químico, físico, biológico e ambiental de vetores?", a: "Químico: uso de inseticidas, larvicidas. Físico: barreiras como telas, tampas, vedação de caixas. Biológico: uso de predadores naturais ou bactérias (ex: Bacillus thuringiensis). Ambiental: modificação do ambiente para evitar criadouros. 📚 Fonte: Fundação Nacional de Saúde (FUNASA).", icon: '<span class="text-5xl">⚙️</span>'},
+                {q: "Como deve ser feito o registro e a notificação das atividades pelo ACE?", a: "➡️ Através de fichas padronizadas, sistemas informatizados (ex: e-SUS), e relatórios supervisionados. A notificação oportuna e correta é fundamental para o planejamento das ações de saúde pública. 📚 Fonte: Sistema de Informação da Vigilância em Saúde (SIVSUS), MS.", icon: '<span class="text-5xl">✍️</span>'},
+            ];
+            createFaqModal(basicKnowledgeModal, 'Conhecimento Básico do ACE', "Agente, o conhecimento é a sua principal ferramenta de trabalho. Dominar informações sobre endemias, vigilância, saneamento e saúde pública é vital para agir com segurança, precisão e impacto. Quanto mais você entende sua área de atuação, mais eficaz será sua prevenção e mais vidas poderá proteger. A ignorância, nesse campo, não é só uma falha — é um risco para toda a comunidade. Conhecer é salvar.", qna);
+        });
+
         showDengueModalBtn.addEventListener('click', () => {
             const dengueQNA = [
-                {q: "Quais são os sintomas clássicos da dengue?", a: "Os sintomas mais comuns são febre alta (acima de 38°C) de início súbito, dor de cabeça forte, dor atrás dos olhos, dores intensas no corpo e nas articulações, além de fraqueza e cansaço. Manchas vermelhas na pele também podem aparecer."},
-                {q: "Como é a principal forma de prevenção?", a: "A melhor e mais eficaz forma de prevenção é a eliminação dos criadouros do mosquito. Isso significa não deixar água parada em nenhum tipo de recipiente, como vasos de plantas, pneus velhos, garrafas, caixas d'água destampadas e calhas sujas. A regra é clara: não deu água para o mosquito, ele não se cria."},
-                {q: "Qual é o tratamento para a dengue?", a: "Não existe um medicamento específico para tratar o vírus da dengue. O tratamento consiste em aliviar os sintomas. É fundamental manter-se em repouso, beber muito líquido (água, sucos, soro de reidratação oral) para evitar a desidratação e usar apenas medicamentos indicados por um profissional de saúde para febre e dor, como paracetamol ou dipirona."},
-                {q: "Quais são os sinais de alerta para a dengue grave?", a: "Após o período de febre, geralmente entre o 3º e o 7º dia, é crucial ficar atento a sinais como dor abdominal intensa e contínua, vômitos persistentes, sangramento de mucosas (nariz, gengiva), sonolência, irritabilidade, tontura ao se levantar e acúmulo de líquidos. A presença de um ou mais desses sintomas indica a necessidade de procurar atendimento médico de urgência."},
-                {q: "Posso tomar qualquer remédio para dor e febre?", a: "Não! Em caso de suspeita de dengue, é terminantemente proibido o uso de medicamentos à base de ácido acetilsalicílico (AAS), como a Aspirina, e outros anti-inflamatórios não esteroides (como ibuprofeno e nimesulida). Esses medicamentos podem aumentar o risco de hemorragias e agravar a doença."},
-                {q: "Posso pegar dengue mais de uma vez?", a: "Sim. Existem quatro sorotipos do vírus (DENV-1, 2, 3 e 4). A infecção por um deles gera imunidade permanente apenas para aquele sorotipo. Portanto, uma pessoa pode ter dengue até quatro vezes."},
-                {q: "A dengue é contagiosa?", a: "Não diretamente. Uma pessoa não transmite a doença para outra. A dengue só é transmitida pela picada da fêmea do mosquito Aedes aegypti que tenha se infectado ao picar alguém com o vírus."},
-                {q: "Existe vacina contra a dengue?", a: "Sim. Existe vacina contra a dengue, que está sendo progressivamente implementada no sistema público de saúde para públicos específicos e também está disponível na rede privada. Ela é uma ferramenta importante, mas não elimina a necessidade de combater o mosquito."},
-                {q: "É possível estar com dengue e não ter sintomas?", a: "Sim. Muitas infecções são assintomáticas. A pessoa não sente nada, mas se um mosquito a picar nesse período, ele se contamina e passa a transmitir o vírus para outras pessoas."},
-                {q: "A dengue pode deixar sequelas?", a: "Sim. Embora a maioria se recupere bem, algumas pessoas podem sentir cansaço intenso, dores nas articulações e fraqueza muscular por semanas ou até meses após a infecção, condição conhecida como fadiga pós-dengue."},
-                {q: "Por que a dengue é mais comum no verão?", a: "A combinação de calor e chuvas frequentes cria o ambiente ideal para a proliferação do Aedes aegypti. As temperaturas mais altas aceleram o ciclo de vida do mosquito, fazendo com que mais mosquitos nasçam e piquem em menos tempo."},
-                {q: "A doença é mais perigosa em crianças e idosos?", a: "Sim. Crianças, idosos e pessoas com doenças crônicas (como diabetes e hipertensão) têm maior risco de desenvolver as formas graves da doença e apresentar complicações."},
-                {q: "O vírus da dengue pode ser transmitido pela amamentação?", a: "Não há evidências de que o vírus da dengue seja transmitido através do leite materno. A amamentação é segura e deve ser mantida, pois os benefícios superam os riscos."},
-                {q: "Qual a diferença entre Dengue, Zika e Chikungunya?", a: "Embora transmitidas pelo mesmo mosquito e com sintomas iniciais parecidos (febre, dor de cabeça), a principal característica da Chikungunya são as dores articulares extremamente intensas, enquanto a Zika costuma ter um quadro mais leve, com manchas na pele e coceira mais proeminentes. Apenas um médico pode fazer o diagnóstico correto."},
-                {q: "O que significa o termo 'dengue hemorrágica'?", a: "Este termo caiu em desuso. A classificação atual divide a doença em 'Dengue' (com ou sem sinais de alarme) e 'Dengue Grave'. A forma grave é caracterizada por extravasamento de plasma, sangramentos severos ou comprometimento grave de órgãos."}
+                {q: "Quais são os sintomas clássicos da dengue?", a: "Os sintomas mais comuns são febre alta (acima de 38°C) de início súbito, dor de cabeça forte, dor atrás dos olhos, dores intensas no corpo e nas articulações, além de fraqueza e cansaço. Manchas vermelhas na pele também podem aparecer.", icon: '<span class="text-5xl">🤒</span>'},
+                {q: "Como é a principal forma de prevenção?", a: "A melhor e mais eficaz forma de prevenção é a eliminação dos criadouros do mosquito. Isso significa não deixar água parada em nenhum tipo de recipiente, como vasos de plantas, pneus velhos, garrafas, caixas d'água destampadas e calhas sujas. A regra é clara: não deu água para o mosquito, ele não se cria.", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m17 13-5-5"/><path d="m12 13-5 5"/></svg>'},
+                {q: "Qual é o tratamento para a dengue?", a: "Não existe um medicamento específico para tratar o vírus da dengue. O tratamento consiste em aliviar os sintomas. É fundamental manter-se em repouso, beber muito líquido (água, sucos, soro de reidratação oral) para evitar a desidratação e usar apenas medicamentos indicados por um profissional de saúde para febre e dor, como paracetamol ou dipirona.", icon: '<span class="text-5xl">💧</span>'},
+                {q: "Quais são os sinais de alerta para a dengue grave?", a: "Após o período de febre, geralmente entre o 3º e o 7º dia, é crucial ficar atento a sinais como dor abdominal intensa e contínua, vômitos persistentes, sangramento de mucosas (nariz, gengiva), sonolência, irritabilidade, tontura ao se levantar e acúmulo de líquidos. A presença de um ou mais desses sintomas indica a necessidade de procurar atendimento médico de urgência.", icon: '<span class="text-5xl">❗</span>'},
+                {q: "Posso tomar qualquer remédio para dor e febre?", a: "Não! Em caso de suspeita de dengue, é terminantemente proibido o uso de medicamentos à base de ácido acetilsalicílico (AAS), como a Aspirina, e outros anti-inflamatórios não esteroides (como ibuprofeno e nimesulida). Esses medicamentos podem aumentar o risco de hemorragias e agravar a doença.", icon: '<span class="text-5xl">💊</span>'},
+                {q: "Posso pegar dengue mais de uma vez?", a: "Sim. Existem quatro sorotipos do vírus (DENV-1, 2, 3 e 4). A infecção por um deles gera imunidade permanente apenas para aquele sorotipo. Portanto, uma pessoa pode ter dengue até quatro vezes.", icon: '<span class="text-5xl">🔄</span>'},
+                {q: "A dengue é contagiosa?", a: "Não diretamente. Uma pessoa não transmite a doença para outra. A dengue só é transmitida pela picada da fêmea do mosquito Aedes aegypti que tenha se infectado ao picar alguém com o vírus.", icon: '<span class="text-5xl">🧑‍🤝‍🧑</span>'},
+                {q: "Existe vacina contra a dengue?", a: "Sim. Existe vacina contra a dengue, que está sendo progressivamente implementada no sistema público de saúde para públicos específicos e também está disponível na rede privada. Ela é uma ferramenta importante, mas não elimina a necessidade de combater o mosquito.", icon: '<span class="text-5xl">💉</span>'},
+                {q: "É possível estar com dengue e não ter sintomas?", a: "Sim. Muitas infecções são assintomáticas. A pessoa não sente nada, mas se um mosquito a picar nesse período, ele se contamina e passa a transmitir o vírus para outras pessoas.", icon: '<span class="text-5xl">🤫</span>'},
+                {q: "A dengue pode deixar sequelas?", a: "Sim. Embora a maioria se recupere bem, algumas pessoas podem sentir cansaço intenso, dores nas articulações e fraqueza muscular por semanas ou até meses após a infecção, condição conhecida como fadiga pós-dengue.", icon: '<span class="text-5xl">😩</span>'},
+                {q: "Por que a dengue é mais comum no verão?", a: "A combinação de calor e chuvas frequentes cria o ambiente ideal para a proliferação do Aedes aegypti. As temperaturas mais altas aceleram o ciclo de vida do mosquito, fazendo com que mais mosquitos nasçam e piquem em menos tempo.", icon: '<span class="text-5xl">☀️</span>'},
+                {q: "A doença é mais perigosa em crianças e idosos?", a: "Sim. Crianças, idosos e pessoas com doenças crônicas (como diabetes e hipertensão) têm maior risco de desenvolver as formas graves da doença e apresentar complicações.", icon: '<span class="text-5xl">👨‍👩‍👧‍👦</span>'},
+                {q: "O vírus da dengue pode ser transmitido pela amamentação?", a: "Não há evidências de que o vírus da dengue seja transmitido através do leite materno. A amamentação é segura e deve ser mantida, pois os benefícios superam os riscos.", icon: '<span class="text-5xl">🤱</span>'},
+                {q: "Qual a diferença entre Dengue, Zika e Chikungunya?", a: "Embora transmitidas pelo mesmo mosquito e com sintomas iniciais parecidos (febre, dor de cabeça), a principal característica da Chikungunya são as dores articulares extremamente intensas, enquanto a Zika costuma ter um quadro mais leve, com manchas na pele e coceira mais proeminentes. Apenas um médico pode fazer o diagnóstico correto.", icon: '<span class="text-5xl">❓</span>'},
+                {q: "O que significa o termo 'dengue hemorrágica'?", a: "Este termo caiu em desuso. A classificação atual divide a doença em 'Dengue' (com ou sem sinais de alarme) e 'Dengue Grave'. A forma grave é caracterizada por extravasamento de plasma, sangramentos severos ou comprometimento grave de órgãos.", icon: '<span class="text-5xl">🩸</span>'}
             ];
-            createFaqModal(dengueModal, '🦟 Sobre a Dengue: O que Você Precisa Saber', "Entender a dengue é o primeiro passo para se proteger e cuidar da sua família. A doença pode evoluir de um quadro leve para uma condição grave, exigindo atenção redobrada.", dengueQNA);
+            createFaqModal(dengueModal, '🦟 Sobre a Dengue: O que Você Precisa Saber', "Agente, o conhecimento é a sua principal ferramenta de trabalho. Dominar informações sobre endemias, vigilância, saneamento e saúde pública é vital para agir com segurança, precisão e impacto. Quanto mais você entende sua área de atuação, mais eficaz será sua prevenção e mais vidas poderá proteger. A ignorância, nesse campo, não é só uma falha — é um risco para toda a comunidade. Conhecer é salvar.", dengueQNA);
         });
 
         showAedesModalBtn.addEventListener('click', () => {
              const aedesQNA = [
-                {q: "Como identificar o Aedes aegypti?", a: "Ele é um mosquito pequeno (menor que um pernilongo comum), de cor preta ou marrom-escura, com listras e manchas brancas distintas no corpo e, principalmente, nas pernas. Sua atividade é maior durante o dia."},
-                {q: "Onde o mosquito coloca seus ovos?", a: "A fêmea deposita seus ovos nas paredes de recipientes com água parada, bem próximos à superfície da água. Ela prefere água relativamente limpa, mas pode se adaptar. Qualquer objeto que acumule água pode virar um criadouro."},
-                {q: "Quanto tempo leva para o ovo virar um mosquito adulto?", a: "Em condições favoráveis (calor e umidade), o ciclo completo, do ovo ao mosquito adulto, leva em média de 7 a 10 dias. Por isso a importância da vistoria semanal dos quintais."},
-                {q: "O 'fumacê' acaba com o problema da dengue?", a: "Não. O 'fumacê' (aplicação de inseticida a ultrabaixo volume) mata apenas os mosquitos adultos que estão voando no momento da aplicação. Ele não tem efeito sobre os ovos e as larvas que estão na água. A única solução definitiva é eliminar os criadouros."},
-                {q: "Qual a distância que o Aedes aegypti voa?", a: "Seu raio de voo é curto, geralmente entre 50 a 100 metros do local onde nasceu. Isso significa que, na grande maioria das vezes, o mosquito que pica dentro de uma casa nasceu no próprio quintal ou na vizinhança imediata."},
-                {q: "Por que só a fêmea pica?", a: "Apenas a fêmea se alimenta de sangue, pois ele contém as proteínas necessárias para o desenvolvimento e amadurecimento dos seus ovos. Os machos se alimentam exclusivamente de seiva de plantas."},
-                {q: "Os ovos do mosquito são resistentes?", a: "Extremamente. Os ovos podem sobreviver por mais de um ano em um local seco. Assim que entram em contato com a água novamente, eles podem eclodir e dar início a um novo ciclo."},
-                {q: "O que atrai o mosquito até uma pessoa?", a: "O Aedes aegypti é atraído principalmente pelo gás carbônico (CO₂) que liberamos na respiração e por odores corporais, como o ácido lático liberado no suor. Ele também é atraído pelo calor do corpo."},
-                {q: "Roupas escuras realmente atraem mais o mosquito?", a: "Sim. O mosquito se orienta pela visão e contraste. Cores escuras e vibrantes, como preto e vermelho, se destacam mais no ambiente e atraem sua atenção, ao contrário de cores claras, como branco e bege."},
-                {q: "O Aedes aegypti pica por cima da roupa?", a: "Sim. Se o tecido da roupa for fino e justo ao corpo, como leggings e camisetas de algodão fino, o aparelho picador do mosquito pode atravessá-lo e alcançar a pele."},
-                {q: "Velas de citronela e outras plantas resolvem?", a: "Plantas e velas de citronela ou andiroba têm um efeito repelente muito limitado, restrito a uma área pequena e por pouco tempo. Elas não são eficazes para proteger um ambiente inteiro e não substituem a necessidade de eliminar os criadouros."},
-                {q: "O mosquito prefere picar em que parte do corpo?", a: "Ele tem o hábito de picar baixo, geralmente nas pernas, tornozelos e pés, pois voa a uma baixa altura."},
-                {q: "Quantos ovos uma fêmea pode colocar?", a: "Durante sua vida (que dura cerca de 30 a 45 dias), uma única fêmea pode colocar mais de 200 ovos, distribuindo-os por vários criadouros diferentes."},
-                {q: "O Aedes aegypti também vive dentro de casa?", a: "Sim, ele é um mosquito doméstico e peridoméstico. Ele se abriga dentro de casa, em locais escuros e frescos, como atrás de móveis, cortinas e armários, para se proteger do calor intenso e descansar."},
-                {q: "Além da dengue, o que mais ele transmite?", a: "Este mesmo mosquito é o vetor responsável pela transmissão do Zika Vírus, da Febre Chikungunya e da Febre Amarela urbana."}
+                {q: "O que é o Aedes aegypti e por que ele é considerado um vetor?", a: "➡️ É um mosquito urbano, pequeno e escuro com listras brancas no corpo e pernas. É chamado de vetor porque transmite vírus como dengue, Zika, chikungunya e febre amarela ao picar pessoas infectadas e, depois, sadias.", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2.5 2.5 0 0 1 2.5 2.5V7h-5V4.5A2.5 2.5 0 0 1 12 2z"/><path d="M12 7h.01"/><path d="M17.5 7.5a4.5 4.5 0 0 1 0 9H6.5a4.5 4.5 0 0 1 0-9"/><path d="M14 16.5V22"/><path d="M10 16.5V22"/><path d="M17 10l-2.5 2.5"/><path d="M7 10l2.5 2.5"/></svg>'},
+                {q: "Como ocorre a transmissão de doenças pelo Aedes aegypti?", a: "➡️ A fêmea se infecta ao picar uma pessoa doente. Após o período de incubação (8 a 12 dias), ela transmite o vírus em novas picadas.", icon: '<span class="text-5xl">🔄</span>'},
+                {q: "Quais são os principais criadouros do Aedes aegypti?", a: "➡️ Qualquer recipiente com água parada limpa: caixas d’água destampadas, pneus, vasos de plantas, garrafas, calhas, bebedouros de animais e até tampinhas.", icon: '<span class="text-5xl">💧</span>'},
+                {q: "Qual o papel da fêmea na proliferação do mosquito?", a: "➡️ Só a fêmea pica para obter sangue, essencial para o desenvolvimento dos ovos. Ela pode colocar de 100 a 200 ovos por ciclo e até 1.500 ovos durante sua vida.", icon: '<span class="text-5xl">♀️</span>'},
+                {q: "Por que é importante eliminar os criadouros, mesmo que aparentemente secos?", a: "➡️ Os ovos do Aedes sobrevivem até 450 dias em ambientes secos e eclodem assim que entram em contato com água.", icon: '<span class="text-5xl">⏳</span>'},
+                {q: "Quantos dias leva o desenvolvimento completo do Aedes aegypti, do ovo até o mosquito adulto?", a: "➡️ Em média, 7 a 10 dias, dependendo da temperatura e da disponibilidade de água. As fases são: ovo → larva (4 estágios) → pupa → adulto.", icon: '<span class="text-5xl">🗓️</span>'},
+                {q: "Qual é o tempo de vida de um Aedes aegypti adulto?", a: "➡️ Em média, 30 a 45 dias, mas ele pode viver mais em ambientes quentes e úmidos.", icon: '<span class="text-5xl">⏳</span>'},
+                {q: "Quantos metros um Aedes aegypti consegue voar?", a: "➡️ Normalmente até 100 metros, mas em condições favoráveis pode chegar a 400–600 metros. A dispersão passiva também ocorre em carros, sacolas e objetos.", icon: '<span class="text-5xl">📏</span>'},
+                {q: "O mosquito pica mais em que horários?", a: "➡️ Tem hábitos diurnos, com picos de atividade no início da manhã e no final da tarde. Porém, em ambientes escuros ou sombreados, pode picar a qualquer hora.", icon: '<span class="text-5xl">⏰</span>'},
+                {q: "Como é o comportamento reprodutivo da fêmea?", a: "➡️ A fêmea faz várias posturas por ciclo e prefere locais escuros, úmidos e protegidos. Curiosamente, ela pode colocar ovos em diferentes recipientes no mesmo dia (estratégia de sobrevivência).", icon: '<span class="text-5xl">🥚</span>'},
+                {q: "Como o mosquito localiza o ser humano?", a: "➡️ Pelo gás carbônico (CO₂) exalado, calor corporal e até pelo odor do suor. Ele detecta essas pistas a até 20 metros de distância.", icon: '<span class="text-5xl">👃</span>'},
+                {q: "É verdade que o mosquito prefere algumas pessoas?", a: "➡️ Sim. Estudos mostram que ele se atrai mais por quem tem maior produção de CO₂, roupas escuras, odor corporal intenso ou temperatura mais alta na pele.", icon: '<span class="text-5xl">🎯</span>'},
+                {q: "O Aedes aegypti pode colocar ovos em água suja?", a: "➡️ Raramente. Ele prefere água limpa e parada, mas já foram registrados casos em água levemente suja. Contudo, não se reproduz em esgoto.", icon: '<span class="text-5xl">🚫</span>'},
+                {q: "Os ovos precisam estar submersos para se desenvolver?", a: "➡️ Não. A fêmea os coloca acima da linha d'água. Quando o nível sobe, os ovos entram em contato com a água e eclodem.", icon: '<span class="text-5xl">🌊</span>'},
+                {q: "Por que mesmo recipientes pequenos oferecem risco?", a: "➡️ Porque o mosquito precisa de apenas 1 cm de água para se reproduzir. Uma tampinha de garrafa pode gerar dezenas de mosquitos.", icon: '<span class="text-5xl">🤏</span>'},
             ];
-            createFaqModal(aedesModal, '🦟 Sobre o Vetor, Aedes aegypti: Conheça o Inimigo', "Este pequeno mosquito é um grande problema de saúde pública. Conhecer seus hábitos e ciclo de vida é a chave para um combate eficiente.", aedesQNA);
+            createFaqModal(aedesModal, '🦟 Sobre o Vetor, Aedes aegypti: Conheça o Inimigo', "Agente, o conhecimento é a sua principal ferramenta de trabalho. Dominar informações sobre endemias, vigilância, saneamento e saúde pública é vital para agir com segurança, precisão e impacto. Quanto mais você entende sua área de atuação, mais eficaz será sua prevenção e mais vidas poderá proteger. A ignorância, nesse campo, não é só uma falha — é um risco para toda a comunidade. Conhecer é salvar.", aedesQNA);
         });
 
         // Event Listeners for "Minha Área"
