@@ -17,6 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -50,13 +52,14 @@
             // --- SERVICE WORKER ---
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    const CACHE_NAME = 'ace-flow-cache-v56'; // Cache version bumped
+                    const CACHE_NAME = 'ace-flow-cache-v74'; // Cache version bumped
                     const PRECACHE_ASSETS = [
                         '.',
                         'https://cdn.tailwindcss.com',
                         'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
                         'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
                         'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
+                        'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
                         'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
                         'https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5nw.woff2',
                         'https://i.imgur.com/ArDb28v.png'
@@ -252,6 +255,67 @@
             100% { transform: scale(1.5) rotate(45deg); opacity: 0; }
         }
 
+        /* Report Card Styles */
+        .report-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: card-fade-in 0.5s ease-out forwards;
+        }
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .report-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6b7280; /* text-gray-500 */
+            margin-bottom: 0.5rem;
+        }
+        .report-card-value {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 800; /* font-extrabold */
+            color: #1f2937; /* text-gray-800 */
+            line-height: 1;
+        }
+        .report-card-unit {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563; /* text-gray-600 */
+            margin-left: 0.25rem;
+        }
+        @keyframes card-fade-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* "Minha Area" Navigation Styles */
+        .sector-view {
+            animation: view-enter 0.4s ease-out;
+        }
+        @keyframes view-enter {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .sector-back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
     </style>
 </head>
 
@@ -274,7 +338,7 @@
                         <div class="feature-card p-8">
                             <div class="text-5xl mb-4">📊</div>
                             <h3 class="text-xl font-bold mb-2">Relatórios Completos</h3>
-                            <p class="text-text-muted">Transforme seus dados em insights visuais. Gere relatórios dinâmicos com gráficos intuitivos e analise sua produtividade através de filtros de tempo flexíveis, do trabalho diário ao desempenho anual.</p>
+                            <p class="text-text-muted">Transforme seus dados em insights visuais. Gere relatórios dinâmicos e analise sua produtividade através de filtros de tempo flexíveis, do trabalho diário ao desempenho anual.</p>
                         </div>
                         <div class="feature-card p-8">
                             <div class="text-5xl mb-4">✨</div>
@@ -284,7 +348,7 @@
                         <div class="feature-card p-8">
                             <div class="text-5xl mb-4">📋</div>
                             <h3 class="text-xl font-bold mb-2">PDFs Profissionais</h3>
-                            <p class="text-text-muted">Exporte seus dados em PDFs autoexplicativos e resumidos. Um formato profissional, pronto para arquivamento ou compartilhamento, que reflete a qualidade do seu trabalho.</p>
+                            <p class="text-text-muted">Exporte seus dados em PDFs autoexplicativos e resumidos. Um formato profissional, pronto para arquivamento ou compartilhamento.</p>
                         </div>
                     </div>
                 </section>
@@ -295,17 +359,28 @@
                         <div class="feature-card p-8">
                             <div class="text-5xl mb-4">✍️</div>
                             <h3 class="text-xl font-bold mb-2">Preenchimento Inteligente</h3>
-                            <p class="text-text-muted">Deixe o app trabalhar por você. Nossa tecnologia de preenchimento inteligente antecipa seus próximos passos, replicando informações de forma automática e garantindo registros rápidos e consistentes.</p>
+                            <p class="text-text-muted">Deixe o app trabalhar por você. Nossa tecnologia antecipa seus próximos passos, replicando informações e garantindo registros rápidos e consistentes.</p>
                         </div>
                          <div class="feature-card p-8">
-                            <div class="text-5xl mb-4">💧</div>
-                            <h3 class="text-xl font-bold mb-2">Cálculos Rápidos</h3>
-                            <p class="text-text-muted">Calcule o volume de reservatórios e a sua meta diária de forma automática, ganhando tempo e precisão em campo.</p>
+                            <div class="text-5xl mb-4">💾</div>
+                            <h3 class="text-xl font-bold mb-2">Salvamento Automático</h3>
+                            <p class="text-text-muted">Seu progresso é salvo automaticamente no histórico ao finalizar cada imóvel, garantindo que nenhum dado seja perdido e alimentando seus relatórios em tempo real.</p>
                         </div>
                         <div class="feature-card p-8">
                            <div class="text-5xl mb-4">📱</div>
                             <h3 class="text-xl font-bold mb-2">Experiência de App Real</h3>
                             <p class="text-text-muted">Instale no seu celular para uma experiência em tela cheia, sem a barra do navegador, com funcionamento 100% offline e sem perda de dados.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="fade-in-section">
+                    <h2 class="text-4xl font-extrabold mb-12">Sua Área, Suas Regras</h2>
+                    <div class="grid grid-cols-1">
+                         <div class="feature-card p-8 max-w-2xl mx-auto">
+                            <div class="text-5xl mb-4">🗺️</div>
+                            <h3 class="text-xl font-bold mb-2">Gestão Personalizada</h3>
+                            <p class="text-text-muted">Mapeie e gerencie sua área de trabalho com total flexibilidade. Cadastre novos imóveis e mantenha um banco de dados pessoal e atualizado, garantindo que nenhum endereço seja esquecido.</p>
                         </div>
                     </div>
                 </section>
@@ -384,7 +459,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label for="totalImoveis" class="text-sm font-medium text-text-muted">Total de Imóveis</label>
-                            <input type="number" id="totalImoveis" class="form-input mt-1" placeholder="Ex: 800">
+                            <input type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" id="totalImoveis" class="form-input mt-1" placeholder="Ex: 800">
                         </div>
                         <div>
                             <label for="cicloInicio" class="text-sm font-medium text-text-muted">Início do Ciclo</label>
@@ -418,7 +493,7 @@
                         <div class="space-y-1">
                             <label for="largura" class="text-sm font-medium text-text-muted">Largura</label>
                             <div class="flex gap-2">
-                                <input type="number" id="largura" class="form-input" placeholder="0.0">
+                                <input type="number" min="0" id="largura" class="form-input" placeholder="0.0">
                                 <select id="larguraUnidade" class="form-select w-auto">
                                     <option value="m">m</option>
                                     <option value="cm">cm</option>
@@ -428,7 +503,7 @@
                         <div class="space-y-1">
                             <label for="comprimento" class="text-sm font-medium text-text-muted">Comprimento</label>
                             <div class="flex gap-2">
-                                <input type="number" id="comprimento" class="form-input" placeholder="0.0">
+                                <input type="number" min="0" id="comprimento" class="form-input" placeholder="0.0">
                                 <select id="comprimentoUnidade" class="form-select w-auto">
                                     <option value="m">m</option>
                                     <option value="cm">cm</option>
@@ -438,7 +513,7 @@
                         <div class="space-y-1">
                             <label for="altura" class="text-sm font-medium text-text-muted">Altura/Prof.</label>
                             <div class="flex gap-2">
-                                <input type="number" id="altura" class="form-input" placeholder="0.0">
+                                <input type="number" min="0" id="altura" class="form-input" placeholder="0.0">
                                 <select id="alturaUnidade" class="form-select w-auto">
                                     <option value="m">m</option>
                                     <option value="cm">cm</option>
@@ -520,29 +595,29 @@
             <div id="summarySection" class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5"></div>
         </section>
 
-        <footer class="grid grid-cols-2 gap-4 my-6">
-            <button id="savePdfBtn" class="btn bg-green-800 hover:bg-green-900 text-white">Gerar PDF</button>
-            <button id="reportBtn" class="btn bg-purple-900 hover:bg-purple-950 text-white">Gerar Relatório</button>
-            <button id="aiAnalysisBtn" class="btn bg-blue-800 hover:bg-blue-900 text-white">Analisar Dia ✨</button>
-            <button id="aiPlanBtn" class="btn bg-blue-800 hover:bg-blue-900 text-white">Planejar Amanhã ✨</button>
-            <button id="myAreaBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white">Minha Área</button>
-            <button id="clearDayBtn" class="btn bg-red-700 hover:bg-red-800 text-white">Limpar Dia</button>
-        </footer>
-        
-        <section class="my-8 text-center">
-            <button id="curiositiesBtn" class="btn bg-teal-600 text-white hover:bg-teal-700 w-full text-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                15 Curiosidades sobre a Dengue e o Aedes Aegypti
-            </button>
-            <div id="subButtonsContainer" class="hidden mt-4 space-y-3">
+        <footer class="my-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <button id="savePdfBtn" class="btn bg-green-800 hover:bg-green-900 text-white">Gerar PDF</button>
+                <button id="reportBtn" class="btn bg-purple-900 hover:bg-purple-950 text-white">Gerar Relatório</button>
+                <button id="myAreaBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white">Minha Área</button>
+                <button id="clearDayBtn" class="btn bg-red-700 hover:bg-red-800 text-white">Limpar Dia</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <button id="aiCombinedAnalysisBtn" class="btn bg-blue-800 hover:bg-blue-900 text-white text-lg">Análise e Plano Estratégico ✨</button>
+                 <button id="curiositiesBtn" class="btn bg-teal-600 text-white hover:bg-teal-700 text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    15 Curiosidades...
+                </button>
+            </div>
+             <div id="subButtonsContainer" class="hidden mt-4 space-y-3 md:col-span-2">
                  <p class="text-center text-text-muted max-w-2xl mx-auto">A informação correta é a nossa arma mais poderosa contra a dengue. Com o aumento dos casos, é vital que todos conheçam os detalhes sobre a doença, o mosquito transmissor e o papel crucial dos profissionais que estão na linha de frente deste combate.</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
                     <button id="showDengueModalBtn" class="btn bg-orange-500 text-white hover:bg-orange-600 flex-1">Aprenda mais sobre a Dengue</button>
                     <button id="showAedesModalBtn" class="btn bg-gray-700 text-white hover:bg-gray-800 flex-1">Aprenda mais sobre o Aedes Aegypti</button>
                 </div>
             </div>
-        </section>
-
+        </footer>
+        
         <footer class="text-center mt-12 py-8 border-t-2 border-dashed border-border-color">
             <h2 class="text-4xl font-extrabold text-khaki-base glow-text">ACE FLOW</h2>
             <p class="text-text-muted mt-2">Obrigado por utilizar nossa ferramenta. Seu trabalho é fundamental para a saúde de todos.</p>
@@ -565,57 +640,41 @@
     </div>
     
     <div id="reportModal" class="fixed inset-0 z-50 modal hidden">
-         <div class="card p-4 md:p-6 w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
+         <div class="card p-4 md:p-6 w-11/12 max-w-6xl max-h-[90vh] flex flex-col">
             <header class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 class="section-title">Relatório de Atividades</h2>
+                <h2 class="section-title">Relatórios Inteligentes</h2>
                 <button id="closeReportModalBtn" class="text-3xl font-bold">&times;</button>
             </header>
-            <div class="flex-grow overflow-y-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 border-b pb-4">
-                    <div>
-                        <label class="font-semibold text-sm">Período</label>
-                        <div class="flex flex-wrap gap-2 mt-1">
-                             <button data-period="day" class="btn-filter btn bg-slate-700 hover:bg-slate-800 text-white text-sm">Hoje</button>
-                             <button data-period="week" class="btn-filter btn bg-slate-700 hover:bg-slate-800 text-white text-sm">Semana</button>
-                             <button data-period="month" class="btn-filter btn bg-slate-700 hover:bg-slate-800 text-white text-sm">Mês</button>
-                             <button data-period="year" class="btn-filter btn bg-slate-700 hover:bg-slate-800 text-white text-sm">Ano</button>
-                        </div>
+            <div id="reportModalBody" class="flex-grow overflow-y-auto pr-2">
+                <!-- Filtros -->
+                <div class="flex flex-col md:flex-row gap-4 mb-4 pb-4 border-b">
+                    <div class="flex-1">
+                        <label for="reportStartDate" class="font-semibold text-sm">De:</label>
+                        <input type="date" id="reportStartDate" class="form-input mt-1">
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="reportCycleSelector" class="font-semibold text-sm">Ciclo</label>
-                            <select id="reportCycleSelector" class="form-select mt-1"></select>
-                        </div>
-                        <div>
-                            <label for="reportStreetSearch" class="font-semibold text-sm">Logradouro</label>
-                            <input type="text" id="reportStreetSearch" class="form-input mt-1" placeholder="Pesquisar rua...">
-                        </div>
+                    <div class="flex-1">
+                        <label for="reportEndDate" class="font-semibold text-sm">Até:</label>
+                        <input type="date" id="reportEndDate" class="form-input mt-1">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="searchReportBtn" class="btn bg-blue-800 text-white hover:bg-blue-900 w-full md:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            Pesquisar
+                        </button>
                     </div>
                 </div>
-                <div id="reportContent" class="space-y-8">
+                <!-- Conteúdo do Relatório -->
+                <div id="reportContent" class="space-y-6">
                      <div id="no-report-data" class="text-center my-8 text-text-muted">
-                        <p class="font-bold text-lg">Selecione um filtro para começar.</p>
-                        <p>Nenhum dado encontrado no histórico.</p>
+                        <p class="font-bold text-lg">Selecione um período para gerar o relatório.</p>
                     </div>
-                    <div class="hidden grid grid-cols-1 lg:grid-cols-2 gap-8" id="chartsContainer">
-                        <div>
-                            <h3 class="font-bold text-lg text-center mb-2">Visão Geral das Visitas</h3>
-                            <div class="max-w-sm mx-auto"><canvas id="visitsChart"></canvas></div>
-                        </div>
-                         <div>
-                            <h3 class="font-bold text-lg text-center mb-2">Produção Detalhada</h3>
-                            <canvas id="productionChart"></canvas>
-                        </div>
-                        <div class="lg:col-span-2">
-                            <h3 class="font-bold text-lg text-center mb-2">Atividade por Bairro</h3>
-                            <canvas id="bairroChart"></canvas>
-                        </div>
+                    <div id="reportDataContainer" class="hidden space-y-6">
+                        <!-- Cards de dados aqui -->
                     </div>
                 </div>
             </div>
             <footer id="reportFooter" class="mt-6 pt-4 border-t flex justify-end gap-3 hidden">
-                <button id="shareReportBtn" class="btn bg-sky-600 hover:bg-sky-700 text-white">Compartilhar</button>
-                <button id="exportReportBtn" class="btn bg-emerald-600 hover:bg-emerald-700 text-white">Exportar p/ Planilha</button>
+                <button id="downloadReportPdfBtn" class="btn bg-red-700 hover:bg-red-800 text-white">Baixar PDF</button>
             </footer>
         </div>
     </div>
@@ -632,12 +691,15 @@
     </div>
     
     <div id="sectorModal" class="fixed inset-0 z-50 modal hidden">
-         <div class="card p-4 md:p-6 w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
+         <div class="card p-4 md:p-6 w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
             <header class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 class="section-title">Minha Área de Atuação</h2>
+                <button id="sectorBackBtn" class="sector-back-btn hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 id="sectorModalTitle" class="section-title flex-grow text-center">Minha Área de Atuação</h2>
                 <button id="closeSectorModalBtn" class="text-3xl font-bold">&times;</button>
             </header>
-            <div id="sectorModalContent" class="flex-grow overflow-y-auto">
+            <div id="sectorModalContent" class="flex-grow overflow-y-auto relative">
             </div>
         </div>
     </div>
@@ -665,9 +727,9 @@
         let visitaCounter = 0;
         let confirmCallback = null;
         let dailyGoal = 0;
-        let visitsChart, productionChart, bairroChart;
         let deferredInstallPrompt = null;
         let currentReportData = null; // Armazena dados do relatório atual para exportação
+        let sectorNavigationStack = [];
 
         // --- SELETORES DO DOM ---
         const landingPage = document.getElementById('landingPage');
@@ -693,15 +755,16 @@
         const modalConfirmBtn = document.getElementById('modalConfirmBtn');
         const modalCancelBtn = document.getElementById('modalCancelBtn');
         const reportModal = document.getElementById('reportModal');
+        const reportModalBody = document.getElementById('reportModalBody');
         const closeReportModalBtn = document.getElementById('closeReportModalBtn');
-        const reportCycleSelector = document.getElementById('reportCycleSelector');
-        const reportStreetSearch = document.getElementById('reportStreetSearch');
+        const reportStartDate = document.getElementById('reportStartDate');
+        const reportEndDate = document.getElementById('reportEndDate');
+        const searchReportBtn = document.getElementById('searchReportBtn');
         const reportContent = document.getElementById('reportContent');
         const noReportData = document.getElementById('no-report-data');
-        const chartsContainer = document.getElementById('chartsContainer');
+        const reportDataContainer = document.getElementById('reportDataContainer');
         const reportFooter = document.getElementById('reportFooter');
-        const shareReportBtn = document.getElementById('shareReportBtn');
-        const exportReportBtn = document.getElementById('exportReportBtn');
+        const downloadReportPdfBtn = document.getElementById('downloadReportPdfBtn');
         const fixedInfoBar = document.getElementById('fixed-info-bar');
         const fixedAgentName = document.getElementById('fixed-agent-name');
         const fixedPropertyInfo = document.getElementById('fixed-property-info');
@@ -713,8 +776,7 @@
         const dailyGoalEl = document.getElementById('dailyGoal');
         const dailyProgressEl = document.getElementById('dailyProgress');
         const progressTextEl = document.getElementById('progressText');
-        const aiAnalysisBtn = document.getElementById('aiAnalysisBtn');
-        const aiPlanBtn = document.getElementById('aiPlanBtn');
+        const aiCombinedAnalysisBtn = document.getElementById('aiCombinedAnalysisBtn');
         const aiModal = document.getElementById('aiModal');
         const aiModalTitle = document.getElementById('aiModalTitle');
         const aiModalContent = document.getElementById('aiModalContent');
@@ -732,6 +794,8 @@
         const myAreaBtn = document.getElementById('myAreaBtn');
         const sectorModal = document.getElementById('sectorModal');
         const sectorModalContent = document.getElementById('sectorModalContent');
+        const sectorModalTitle = document.getElementById('sectorModalTitle');
+        const sectorBackBtn = document.getElementById('sectorBackBtn');
         const closeSectorModalBtn = document.getElementById('closeSectorModalBtn');
         // Seletores de Backup/Restauração
         const backupBtn = document.getElementById('backupBtn');
@@ -834,7 +898,7 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-x-3">
-                            <div><label class="text-sm font-bold text-text-muted">Quarteirão</label><input type="number" class="form-input quarteirao mt-1 text-center"></div>
+                            <div><label class="text-sm font-bold text-text-muted">Quarteirão</label><input type="number" min="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input quarteirao mt-1 text-center"></div>
                             <div><label class="text-sm font-bold text-text-muted">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
                             <div><label class="text-sm font-bold text-text-muted">Nº</label><input type="text" inputmode="numeric" class="form-input numero mt-1 text-center is-filled" value="S/N" onfocus="if(this.value === 'S/N') this.value=''" onblur="if(this.value.trim() === '') this.value='S/N'"></div>
                         </div>
@@ -845,10 +909,10 @@
                         <div class="border-t border-border-color pt-4 mt-4">
                             <p class="text-center text-sm font-bold text-text-muted mb-2">Resultados</p>
                             <div class="grid grid-cols-3 gap-2">
-                                <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" class="form-input elim mt-1 text-center" placeholder="0"></div>
+                                <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input elim mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Trat.</label><button type="button" class="toggle-check tratado mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Larvicida</label><select class="form-select gram mt-1 text-center"></select></div>
-                                <div class="text-center"><label class="text-xs font-medium">Dep.</label><input type="number" min="0" class="form-input dep mt-1 text-center" placeholder="0"></div>
+                                <div class="text-center"><label class="text-xs font-medium">Dep.</label><input type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input dep mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
                             </div>
@@ -953,9 +1017,14 @@
                 statusIndicator.textContent = '✅ Preenchido';
                 statusIndicator.classList.add('text-confirm-green');
                 if (!horarioInput.value) {
-                     horarioInput.value = new Date().toTimeString().slice(0, 5);
-                     horarioInput.classList.add('is-filled');
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    horarioInput.value = `${hours}:${minutes}`;
+                    horarioInput.classList.add('is-filled');
                 }
+                // Automatically save to history when a card is completed
+                saveCurrentDayToHistory(false);
             } else if (hasManualInput) {
                 statusIndicator.textContent = 'Em Preenchimento...';
                 statusIndicator.classList.add('text-orange-500'); 
@@ -1143,7 +1212,14 @@
             agenteInput.value = data.header.agente || agenteInput.value;
             bairroInput.value = data.header.bairro || '';
             cicloSelect.value = data.header.ciclo || '';
-            dataInput.value = data.header.data || new Date().toISOString().slice(0, 10);
+            
+            // Correct date initialization
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dataInput.value = data.header.data || `${year}-${month}-${day}`;
+
             [agenteInput, bairroInput, cicloSelect, dataInput].forEach(el => { if(el.value) el.classList.add('is-filled'); });
             data.visits.forEach((visitData, index) => {
                 const card = visitasContainer.children[index];
@@ -1167,7 +1243,33 @@
             });
         };
         
-        const generatePDF = () => {
+        const saveCurrentDayToHistory = (showSuccessAlert = true) => {
+            const dailyData = JSON.parse(localStorage.getItem('aceFlowDailyData'));
+            if (!dailyData || !dailyData.header.data) {
+                if (showSuccessAlert) alert("Não há dados do dia para salvar.");
+                return false;
+            }
+            
+            const filledVisits = dailyData.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita);
+            if (filledVisits.length === 0) {
+                if (showSuccessAlert) alert("Nenhum imóvel preenchido para salvar no histórico.");
+                return false;
+            }
+
+            let history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
+            history = history.filter(entry => entry.header.data !== dailyData.header.data);
+            history.push(dailyData);
+            localStorage.setItem('aceFlowHistory', JSON.stringify(history));
+            
+            updateSectorData(dailyData);
+
+            if (showSuccessAlert) alert('Dados do dia salvos no histórico com sucesso!');
+            return true;
+        };
+
+        const generateDailyPDF = () => {
+            if (!saveCurrentDayToHistory(true)) return; // Salva com alerta antes de gerar o PDF
+
             const doc = new jsPDF();
             const data = JSON.parse(localStorage.getItem('aceFlowDailyData'));
             if (!data) return;
@@ -1177,21 +1279,16 @@
             );
 
             if (filledVisits.length === 0) {
-                alert("Nenhum imóvel totalmente preenchido para gerar o PDF.");
                 return;
             }
 
             const { agente, bairro, ciclo, data: workDate } = data.header;
             const dateFormatted = new Date(workDate + 'T12:00:00').toLocaleDateString('pt-BR');
             
-            // --- PDF STYLING ---
-            const primaryColor = '#111827'; // Azul escuro quase preto
-            const bodyTextColor = '#374151';
+            const primaryColor = '#111827';
             const headerFooterColor = '#9CA3AF';
 
             doc.setFont('helvetica', 'normal');
-
-            // Cabeçalho do PDF
             doc.setFillColor(primaryColor);
             doc.rect(0, 0, 210, 25, 'F');
             doc.setFontSize(22);
@@ -1202,8 +1299,6 @@
             doc.setFont('helvetica', 'normal');
             doc.text("Relatório de Atividades Diárias", 105, 17, { align: 'center' });
 
-
-            // Informações do Agente
             doc.autoTable({
                 startY: 30,
                 theme: 'plain',
@@ -1230,11 +1325,6 @@
                 body: detalhesData,
                 headStyles: { fillColor: primaryColor, fontSize: 16 },
                 styles: { fontSize: 16, cellPadding: 3 },
-                didDrawPage: (data) => { // Rodapé
-                     doc.setFontSize(8);
-                     doc.setTextColor(headerFooterColor);
-                     doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, 287);
-                }
             });
 
             const producaoData = [
@@ -1256,32 +1346,15 @@
                 headStyles: { fillColor: primaryColor, fontSize: 16 },
                 styles: { fontSize: 16, cellPadding: 3 },
                 willDrawCell: function(data) {
-                    const boldLabels = [
-                        'Tratamento Focal', 'Quantidade de Larvicida', 'Depósitos Tratados', 
-                        'Eliminados', 'Quarteirões Trabalhados', 'Quarteirões Concluídos'
-                    ];
-                    if (data.section === 'body') {
-                         if (boldLabels.includes(data.cell.text[0])) {
-                            data.cell.styles.fontStyle = 'bold';
-                            if (data.row.cells[1]) {
-                                data.row.cells[1].styles.fontStyle = 'bold';
-                            }
-                        }
-                        if (data.cell.text[0] === 'Total de Focos') {
-                            data.cell.styles.textColor = '#e74c3c';
-                            data.cell.styles.fontStyle = 'bold';
-                            if (data.row.cells[1]) {
-                                data.row.cells[1].styles.textColor = '#e74c3c';
-                                data.row.cells[1].styles.fontStyle = 'bold';
-                            }
+                    if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
+                        data.cell.styles.textColor = '#e74c3c';
+                        data.cell.styles.fontStyle = 'bold';
+                        if (data.row.cells[1]) {
+                            data.row.cells[1].styles.textColor = '#e74c3c';
+                            data.row.cells[1].styles.fontStyle = 'bold';
                         }
                     }
                 },
-                didDrawPage: (data) => { // Rodapé
-                     doc.setFontSize(8);
-                     doc.setTextColor(headerFooterColor);
-                     doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, 287);
-                }
             });
             
             const visitaMap = { T: 'Trab.', P: 'Recuperado', F: 'Fechado', R: 'Recusado' };
@@ -1289,15 +1362,11 @@
                 i + 1, v.bairro, v.logradouro, v.quarteirao, v.numero, visitaMap[v.visita] || v.visita, v.horario || ''
             ]);
             doc.autoTable({
-                head: [['#', 'Bairro', 'Logradouro', 'Quarteirão', 'Número', 'Visita', 'Horário']], body: visitData,
+                head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Visita', 'Horário']], 
+                body: visitData,
                 startY: doc.lastAutoTable.finalY + 10,
-                headStyles: { fillColor: '#6B7280', fontSize: 16 },
-                styles: { fontSize: 16 },
-                didDrawPage: (data) => { // Rodapé
-                     doc.setFontSize(8);
-                     doc.setTextColor(headerFooterColor);
-                     doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, 287);
-                }
+                headStyles: { fillColor: '#6B7280', fontSize: 12 },
+                styles: { fontSize: 10 },
             });
             
             doc.save(`ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
@@ -1349,211 +1418,218 @@
             }
         };
         
-        const handleAiAnalysis = async () => {
-            aiModalTitle.textContent = "Análise Inteligente do Dia";
+        const handleAiCombinedAnalysis = async () => {
+            aiModalTitle.textContent = "Análise e Plano Estratégico";
             aiModalContent.innerHTML = `<div class="flex justify-center items-center h-full"><div class="loader"></div></div>`;
             aiModal.classList.remove('hidden');
 
             const summaryData = getSummaryData();
-            const prompt = `
-                Você é um analista de dados e supervisor de uma equipe de Agentes de Combate às Endemias. Com base nos dados do dia de trabalho de um agente, escreva um resumo narrativo em 2 ou 3 parágrafos. Destaque as conquistas (como número de imóveis trabalhados e quarteirões concluídos), aponte áreas que precisam de atenção (como focos encontrados, recusas ou imóveis fechados) e termine com uma nota positiva e encorajadora. Seja profissional, mas também humano. Formate a resposta usando Markdown (títulos, negrito, etc.).
-
-                Dados do dia:
-                ${JSON.stringify(summaryData, null, 2)}
-            `;
-            const result = await callAiAPI(prompt);
-            aiModalContent.innerHTML = result.replace(/\n/g, '<br>');
-        };
-        
-        const handleAiPlanning = async () => {
-            aiModalTitle.textContent = "Plano Estratégico para Amanhã";
-            aiModalContent.innerHTML = `<div class="flex justify-center items-center h-full"><div class="loader"></div></div>`;
-            aiModal.classList.remove('hidden');
-
             const visitData = JSON.parse(localStorage.getItem('aceFlowDailyData'))?.visits || [];
             const filledVisits = visitData.filter(v => v.logradouro && v.visita);
-            
-            if (filledVisits.length === 0) {
-                aiModalContent.innerHTML = "<p>Não há dados de visitas suficientes para gerar um plano. Por favor, preencha alguns imóveis primeiro.</p>";
-                return;
-            }
 
             const prompt = `
-                Você é um epidemiologista e planejador estratégico para equipes de saúde pública, especializado no combate ao Aedes aegypti. Sua missão é analisar os dados de visitas de um Agente de Combate às Endemias e criar um plano de ação estratégico para o próximo dia de trabalho, focando nas áreas de maior risco para a proliferação do vetor.
+                Você é um supervisor de saúde pública e epidemiologista. Sua missão é criar um relatório consolidado para um Agente de Combate a Endemias. O relatório deve ter duas seções claras, formatadas em Markdown:
 
-                Com base nos dados fornecidos (que podem representar um ou vários dias de trabalho), sua análise deve ir além do óbvio e identificar:
-                1.  **Hotspots de Foco:** Quais ruas ou quarteirões apresentam uma concentração de focos positivos ('foco: true')? Estas são as áreas de prioridade máxima.
-                2.  **Padrões de Tratamento:** Quais áreas exigiram mais tratamentos focais ('trat: true')? Isso pode indicar uma alta densidade de depósitos que, mesmo sem larvas, representam um risco iminente.
-                3.  **Áreas com Pendências Críticas:** Quais ruas têm uma combinação de imóveis fechados ('F') e focos próximos? A recuperação desses imóveis é crucial.
+                1.  **Análise de Desempenho do Dia:**
+                    * Com base nos dados de resumo do dia, escreva um resumo narrativo em 2 parágrafos.
+                    * Destaque as conquistas (ex: número de imóveis trabalhados, quarteirões concluídos, poucos focos).
+                    * Aponte áreas que precisam de atenção (ex: focos encontrados, recusas, imóveis fechados).
+                    * Termine com uma nota positiva e encorajadora.
 
-                Com base nessa análise, crie um plano de ação em tópicos (bullet points) usando Markdown. O plano deve ser prático e direcionado:
-                -   **Prioridade 1 (Alerta Vermelho):** Indique as ruas/quarteirões com focos e recomende uma varredura intensiva nos imóveis vizinhos para conter a proliferação.
-                -   **Prioridade 2 (Atenção):** Liste as áreas com muitos tratamentos ou imóveis fechados próximos a focos, sugerindo horários alternativos para revisita (início da manhã, almoço, final da tarde).
-                -   **Continuidade:** Mencione qual quarteirão deve ser o foco para continuar o ciclo de trabalho padrão.
-                -   **Visão a Longo Prazo:** Adicione uma breve nota sobre como os padrões observados hoje podem influenciar o planejamento para o resto do ciclo.
+                2.  **Plano de Ação Estratégico para Amanhã:**
+                    * Com base na lista de visitas, identifique hotspots de focos, padrões de tratamento e pendências críticas (imóveis fechados perto de focos).
+                    * Crie um plano de ação prático em bullet points, com as seguintes subseções:
+                        * **Prioridade 1 (Alerta Vermelho):** Ruas/quarteirões com focos para varredura intensiva.
+                        * **Prioridade 2 (Atenção):** Áreas com muitos tratamentos ou pendências, sugerindo horários alternativos para revisita.
+                        * **Continuidade:** Qual quarteirão continuar no ciclo normal.
 
-                Lista de visitas:
-                ${JSON.stringify(filledVisits.map(({bairro, logradouro, quarteirao, visita, foco, trat}) => ({bairro, logradouro, quarteirao, visita, foco, trat})), null, 2)}
+                **Dados para Análise:**
+                -   **Resumo do Dia:** ${JSON.stringify(summaryData, null, 2)}
+                -   **Lista de Visitas para Planejamento:** ${JSON.stringify(filledVisits.map(({bairro, logradouro, quarteirao, visita, foco, trat}) => ({bairro, logradouro, quarteirao, visita, foco, trat})), null, 2)}
             `;
             const result = await callAiAPI(prompt);
-            let htmlResult = result
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/(\r\n|\n|\r)/g, '<br>')
-                .replace(/<br>\s*-\s/g, '<ul><li>')
-                .replace(/<br>(\s*<br>\s*)+/g, '</p><p>')
-                .replace(/<\/li><br>/g, '</li>');
-            if (htmlResult.includes('<li>')) htmlResult += '</ul>';
-            aiModalContent.innerHTML = `<p>${htmlResult}</p>`;
+            aiModalContent.innerHTML = result.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         };
 
-        const getWeekNumber = (d) => {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-            return d.getUTCFullYear() + '-' + weekNo;
+        const animateValue = (element, start, end, duration, isFloat = false) => {
+            if (!element) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const currentValue = progress * (end - start) + start;
+                element.textContent = isFloat ? currentValue.toFixed(1) : Math.floor(currentValue);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                     element.textContent = isFloat ? end.toFixed(1) : end;
+                }
+            };
+            window.requestAnimationFrame(step);
         };
 
-        const renderReports = () => {
-            const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
-            if (history.length === 0) {
-                noReportData.classList.remove('hidden');
-                chartsContainer.classList.add('hidden');
-                reportFooter.classList.add('hidden');
+        const renderReports = async () => {
+            const startDate = reportStartDate.value;
+            const endDate = reportEndDate.value;
+            
+            if (!startDate || !endDate) {
+                alert("Por favor, selecione um período de início e fim.");
                 return;
             }
 
-            const activePeriod = document.querySelector('.btn-filter.bg-blue-600')?.dataset.period;
-            const selectedCycle = reportCycleSelector.value;
-            const streetQuery = reportStreetSearch.value.toLowerCase();
+            const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
             
-            let filteredHistory = history;
+            const filteredHistory = history.filter(entry => {
+                const entryDate = entry.header.data;
+                return entryDate >= startDate && entryDate <= endDate;
+            });
 
-            // Filtro por período (Hoje, Semana, Mês, Ano)
-            if (activePeriod) {
-                const now = new Date();
-                const today = now.toISOString().slice(0, 10);
-                const currentWeek = getWeekNumber(now);
-                const currentMonth = now.getFullYear() + '-' + now.getMonth();
-                const currentYear = now.getFullYear();
+            const allVisits = filteredHistory.flatMap(entry => 
+                entry.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita)
+            );
 
-                switch(activePeriod) {
-                    case 'day':
-                        filteredHistory = history.filter(entry => entry.header.data === today);
-                        break;
-                    case 'week':
-                        filteredHistory = history.filter(entry => getWeekNumber(new Date(entry.header.data + 'T12:00:00')) === currentWeek);
-                        break;
-                    case 'month':
-                        filteredHistory = history.filter(entry => {
-                            const entryDate = new Date(entry.header.data + 'T12:00:00');
-                            return entryDate.getFullYear() + '-' + entryDate.getMonth() === currentMonth;
-                        });
-                        break;
-                    case 'year':
-                        filteredHistory = history.filter(entry => new Date(entry.header.data + 'T12:00:00').getFullYear() === currentYear);
-                        break;
-                }
-            }
-            
-            // Filtro por ciclo
-            if (selectedCycle) {
-                filteredHistory = filteredHistory.filter(entry => entry.header.ciclo === selectedCycle);
-            }
-            
-            // Filtro por logradouro
-            let filteredVisits = [];
-            if (streetQuery) {
-                 filteredHistory.forEach(day => {
-                    day.visits.forEach(visit => {
-                        if (visit.logradouro && visit.logradouro.toLowerCase().includes(streetQuery)) {
-                            filteredVisits.push(visit);
-                        }
-                    });
-                });
-            } else {
-                filteredHistory.forEach(day => filteredVisits.push(...day.visits));
-            }
-
-
-            if (filteredVisits.length === 0) {
-                noReportData.innerHTML = `<p class="font-bold text-lg">Nenhum dado encontrado para os filtros selecionados.</p>`;
+            if (allVisits.length === 0) {
+                noReportData.innerHTML = `<p class="font-bold text-lg">Nenhum dado encontrado para o período selecionado.</p>`;
                 noReportData.classList.remove('hidden');
-                chartsContainer.classList.add('hidden');
+                reportDataContainer.classList.add('hidden');
                 reportFooter.classList.add('hidden');
                 return;
             }
             
             noReportData.classList.add('hidden');
-            chartsContainer.classList.remove('hidden');
+            reportDataContainer.classList.remove('hidden');
             reportFooter.classList.remove('hidden');
 
-            const summary = filteredVisits.reduce((acc, v) => {
-                if (v.visita === 'T' || v.visita === 'P') acc.trabalhado++;
+            const summary = allVisits.reduce((acc, v) => {
+                if (v.visita === 'T' || v.visita === 'P') {
+                    acc.trabalhado++;
+                    if (v.imovel === 'R') acc.residencia++;
+                    else if (v.imovel === 'C') acc.comercio++;
+                    else if (v.imovel === 'TB') acc.terrenoBaldio++;
+                    else if (v.imovel === 'O') acc.outro++;
+                }
                 else if (v.visita === 'F') acc.fechado++;
                 else if (v.visita === 'R') acc.recusado++;
                 
-                if (v.foco) acc.focos++;
+                if (v.foco) {
+                    acc.focos++;
+                    acc.hotspots.push({
+                        bairro: v.bairro,
+                        quarteirao: v.quarteirao,
+                        logradouro: v.logradouro,
+                        numero: v.numero,
+                        tipo: v.imovel
+                    });
+                }
+
                 if (v.trat) acc.tratamentoFocal++;
                 acc.gramas += parseFloat(v.gram) || 0;
                 acc.depositosTratados += parseInt(v.dep) || 0;
                 acc.eliminados += parseInt(v.elim) || 0;
                 
-                if (v.bairro) {
-                    acc.bairros[v.bairro] = (acc.bairros[v.bairro] || 0) + 1;
-                }
                 return acc;
-            }, { trabalhado: 0, fechado: 0, recusado: 0, focos: 0, gramas: 0, tratamentoFocal: 0, depositosTratados: 0, eliminados: 0, bairros: {} });
+            }, { 
+                trabalhado: 0, fechado: 0, recusado: 0, focos: 0, gramas: 0, tratamentoFocal: 0, 
+                depositosTratados: 0, eliminados: 0, residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0,
+                hotspots: [] 
+            });
             
             currentReportData = summary;
 
-            // Chart 1: Visitas
-            if (visitsChart) visitsChart.destroy();
-            const visitsCtx = document.getElementById('visitsChart').getContext('2d');
-            visitsChart = new Chart(visitsCtx, {
-                type: 'pie',
-                data: {
-                    labels: ['Trabalhados', 'Fechados', 'Recusados'],
-                    datasets: [{
-                        data: [summary.trabalhado, summary.fechado, summary.recusado],
-                        backgroundColor: ['#2ecc71', '#95a5a6', '#e74c3c'],
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
-            });
+            const createCard = (title, value, unit = '', colorClass = 'text-gray-800', delay = 0, isFloat = false) => {
+                const cardId = `report-card-${title.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                return `
+                    <div class="report-card text-center" style="animation-delay: ${delay}ms;">
+                        <h3 class="report-card-title">${title}</h3>
+                        <p class="${colorClass}">
+                            <span id="${cardId}" class="report-card-value">0</span>
+                            <span class="report-card-unit">${unit}</span>
+                        </p>
+                    </div>
+                `;
+            };
 
-            // Chart 2: Produção
-            if (productionChart) productionChart.destroy();
-            const productionCtx = document.getElementById('productionChart').getContext('2d');
-            productionChart = new Chart(productionCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Focos', 'Trat. Focal', 'Dep. Tratados', 'Eliminados'],
-                    datasets: [{
-                        label: 'Total',
-                        data: [summary.focos, summary.tratamentoFocal, summary.depositosTratados, summary.eliminados],
-                        backgroundColor: ['#e74c3c', '#f1c40f', '#3498db', '#2ecc71'],
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
-            });
+            reportDataContainer.innerHTML = `
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Detalhes dos Imóveis Trabalhados</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        ${createCard('Residências', summary.residencia, '', 'text-blue-600', 0)}
+                        ${createCard('Comércios', summary.comercio, '', 'text-purple-600', 50)}
+                        ${createCard('Ter. Baldios', summary.terrenoBaldio, '', 'text-yellow-600', 100)}
+                        ${createCard('Outros', summary.outro, '', 'text-gray-600', 150)}
+                        ${createCard('Total', summary.trabalhado, '', 'text-green-600 font-black', 200)}
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Resumo da Produção</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        ${createCard('Trat. Focal', summary.tratamentoFocal, '', 'text-indigo-600', 250)}
+                        ${createCard('Larvicida', summary.gramas, 'g', 'text-teal-600', 300, true)}
+                        ${createCard('Dep. Tratados', summary.depositosTratados, '', 'text-cyan-600', 350)}
+                        ${createCard('Eliminados', summary.eliminados, '', 'text-lime-600', 400)}
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Situação das Visitas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${createCard('Fechados', summary.fechado, '', 'text-gray-500', 450)}
+                        ${createCard('Recusados', summary.recusado, '', 'text-orange-600', 500)}
+                        ${createCard('Focos', summary.focos, '', 'text-red-600 font-black', 550)}
+                    </div>
+                </div>
+                <div id="hotspotContainer" class="card p-4">
+                    <h3 class="font-bold text-lg text-center mb-2 text-red-600">Pontos de Atenção (Focos)</h3>
+                    <div id="hotspotContent"></div>
+                </div>
+                <div class="card p-4">
+                    <h3 class="font-bold text-lg text-center mb-2 text-blue-600">Análise Inteligente do Período ✨</h3>
+                    <div id="aiReportContent" class="prose max-w-none prose-p:my-2 prose-headings:my-3"></div>
+                </div>
+            `;
+            
+            // Animate values
+            animateValue(document.getElementById('report-card-Residências'), 0, summary.residencia, 1000);
+            animateValue(document.getElementById('report-card-Comércios'), 0, summary.comercio, 1000);
+            animateValue(document.getElementById('report-card-Ter--Baldios'), 0, summary.terrenoBaldio, 1000);
+            animateValue(document.getElementById('report-card-Outros'), 0, summary.outro, 1000);
+            animateValue(document.getElementById('report-card-Total'), 0, summary.trabalhado, 1000);
+            animateValue(document.getElementById('report-card-Trat--Focal'), 0, summary.tratamentoFocal, 1000);
+            animateValue(document.getElementById('report-card-Larvicida'), 0, summary.gramas, 1000, true);
+            animateValue(document.getElementById('report-card-Dep--Tratados'), 0, summary.depositosTratados, 1000);
+            animateValue(document.getElementById('report-card-Eliminados'), 0, summary.eliminados, 1000);
+            animateValue(document.getElementById('report-card-Fechados'), 0, summary.fechado, 1000);
+            animateValue(document.getElementById('report-card-Recusados'), 0, summary.recusado, 1000);
+            animateValue(document.getElementById('report-card-Focos'), 0, summary.focos, 1000);
 
-            // Chart 3: Bairros
-            if (bairroChart) bairroChart.destroy();
-            const bairroCtx = document.getElementById('bairroChart').getContext('2d');
-            bairroChart = new Chart(bairroCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(summary.bairros),
-                    datasets: [{
-                        label: 'Imóveis Visitados',
-                        data: Object.values(summary.bairros),
-                        backgroundColor: '#3498db'
-                    }]
-                },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 }}}, plugins: { legend: { display: false } } }
-            });
+
+            // Render Hotspots
+            const hotspotContent = document.getElementById('hotspotContent');
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Terreno Baldio', 'O': 'Outro' };
+            if (summary.hotspots.length > 0) {
+                let hotspotHTML = '<ul class="list-none space-y-3">';
+                summary.hotspots.forEach(foco => {
+                    hotspotHTML += `<li class="p-3 bg-red-50 border-l-4 border-red-500 rounded"><span class="font-bold text-red-700">Foco Encontrado:</span><br><span class="text-gray-800">Bairro: <strong>${foco.bairro}</strong>, Quart.: <strong>${foco.quarteirao}</strong><br>Endereço: <strong>${foco.logradouro}, ${foco.numero}</strong><br>Tipo: <strong>${imovelMap[foco.tipo] || foco.tipo}</strong></span></li>`;
+                });
+                hotspotHTML += '</ul>';
+                hotspotContent.innerHTML = hotspotHTML;
+            } else {
+                hotspotContent.innerHTML = '<p class="text-center text-green-600 font-semibold">Nenhum foco encontrado no período. Excelente trabalho!</p>';
+            }
+
+            // Render AI Analysis
+            const aiReportContent = document.getElementById('aiReportContent');
+            aiReportContent.innerHTML = `<div class="flex justify-center items-center h-full"><div class="loader"></div></div>`;
+            const prompt = `
+                Você é um supervisor de saúde pública analisando os dados de um Agente de Combate a Endemias para o período de ${startDate} a ${endDate}.
+                Com base no resumo de dados a seguir, escreva uma análise profissional e elaborada em 2 ou 3 parágrafos.
+                Destaque os pontos positivos (ex: alto número de imóveis trabalhados, poucos focos), identifique os pontos de atenção (ex: alta incidência de focos em certas áreas, muitas recusas) e conclua com recomendações estratégicas para o agente.
+                Seja técnico, mas claro. Formate usando Markdown.
+
+                Dados do período:
+                ${JSON.stringify(summary)}
+            `;
+            const aiResult = await callAiAPI(prompt);
+            aiReportContent.innerHTML = aiResult.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         };
         
         const handleVolumeCalculation = () => {
@@ -1624,107 +1700,137 @@
             if (!username) return;
 
             const sectorKey = `aceFlowSectorData_${username}`;
-            let sectorData = JSON.parse(localStorage.getItem(sectorKey));
-
-            if (!sectorData) {
-                sectorData = { properties: {}, cycleComplete: false };
-            }
-
-            if (sectorData.cycleComplete) {
-                return;
-            }
-
-            let cycleJustCompleted = false;
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
 
             for (const visit of dailyData.visits) {
-                if (visit.bairro && visit.quarteirao && visit.logradouro && visit.numero) {
-                    const propertyId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}`.toLowerCase();
+                if (visit.bairro && visit.quarteirao && visit.logradouro && visit.numero && visit.imovel) {
+                    const propertyId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}-${visit.imovel}`.toLowerCase().replace(/\s+/g, '-');
                     
-                    if (sectorData.properties[propertyId]) {
-                        cycleJustCompleted = true;
-                        break; 
-                    } else {
-                        sectorData.properties[propertyId] = {
+                    if (!sectorData.properties[propertyId]) {
+                         sectorData.properties[propertyId] = {
                             bairro: visit.bairro,
                             quarteirao: visit.quarteirao,
                             logradouro: visit.logradouro,
-                            numero: visit.numero
+                            numero: visit.numero,
+                            tipo: visit.imovel // Store property type
                         };
                     }
                 }
             }
-
-            if (cycleJustCompleted) {
-                sectorData.cycleComplete = true;
-                alert('Ciclo de mapeamento da área concluído! Agora você pode visualizar sua área completa no botão "Minha Área".');
-            }
-
             localStorage.setItem(sectorKey, JSON.stringify(sectorData));
         };
 
         const displayMyArea = () => {
+            sectorNavigationStack = [];
+            renderNeighborhoods();
+            sectorModal.classList.remove('hidden');
+        };
+
+        const renderNeighborhoods = () => {
             const username = document.getElementById('username').value;
             const sectorKey = `aceFlowSectorData_${username}`;
-            const sectorData = JSON.parse(localStorage.getItem(sectorKey));
-
-            sectorModal.classList.remove('hidden');
-
-            if (!sectorData || !sectorData.cycleComplete) {
-                sectorModalContent.innerHTML = `
-                    <div class="text-center p-8">
-                        <h3 class="font-bold text-xl mb-4">Mapeando sua área...</h3>
-                        <p class="text-text-muted">Continue registrando seu trabalho. Após o primeiro dia de um novo ciclo ser registrado, sua área de atuação consolidada aparecerá aqui.</p>
-                    </div>
-                `;
-                return;
-            }
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
             const properties = Object.values(sectorData.properties);
-            const totalImoveis = properties.length;
-            const dataByBairro = properties.reduce((acc, prop) => {
-                const bairro = prop.bairro || "Sem Bairro";
-                if (!acc[bairro]) acc[bairro] = [];
-                acc[bairro].push(prop);
-                return acc;
-            }, {});
-            let html = `<div class="p-2 space-y-6">`;
-            html += `<div class="text-center bg-gray-100 p-4 rounded-lg"><h3 class="text-2xl font-black">Total de Imóveis na Área: ${totalImoveis}</h3></div>`;
-            for (const bairro in dataByBairro) {
-                const propsInBairro = dataByBairro[bairro];
-                const totalInBairro = propsInBairro.length;
-                html += `<div class="card p-4"><h4 class="text-xl font-bold border-b pb-2 mb-3">${bairro} (${totalInBairro} imóveis)</h4>`;
-                const dataByQuarteirao = propsInBairro.reduce((acc, prop) => {
-                    const quarteirao = `Quarteirão ${prop.quarteirao || 'N/A'}`;
-                    if(!acc[quarteirao]) acc[quarteirao] = [];
-                    acc[quarteirao].push(prop);
-                    return acc;
-                }, {});
-                for(const quarteirao in dataByQuarteirao) {
-                    const propsInQuarteirao = dataByQuarteirao[quarteirao].sort((a,b) => a.logradouro.localeCompare(b.logradouro));
-                    const totalInQuarteirao = propsInQuarteirao.length;
-                    html += `<details class="group mb-2"><summary class="font-semibold text-lg cursor-pointer">${quarteirao} (${totalInQuarteirao} imóveis)</summary>`;
-                    const dataByRua = propsInQuarteirao.reduce((acc, prop) => {
-                         const rua = prop.logradouro || "Sem Logradouro";
-                         if(!acc[rua]) acc[rua] = [];
-                         acc[rua].push(prop.numero);
-                         return acc;
-                    }, {});
-                    html += `<div class="pl-4 mt-2 space-y-1">`;
-                    for(const rua in dataByRua) {
-                        const numeros = dataByRua[rua].sort((a, b) => {
-                            const numA = parseInt(a, 10) || a;
-                            const numB = parseInt(b, 10) || b;
-                            if (typeof numA === 'number' && typeof numB === 'number') return numA - numB;
-                            return String(a).localeCompare(String(b));
-                        }).join(', ');
-                        html += `<p><strong>${rua}:</strong> ${numeros}</p>`;
-                    }
-                    html += `</div></details>`;
-                }
-                html += `</div>`;
+
+            const neighborhoods = [...new Set(properties.map(p => p.bairro))];
+            
+            let contentHTML = '<div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sector-view">';
+            if (neighborhoods.length > 0) {
+                neighborhoods.forEach(bairro => {
+                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-khaki-base text-khaki-base text-lg p-6 sector-neighborhood-btn" data-bairro="${bairro}">${bairro}</button>`;
+                });
+            } else {
+                contentHTML += '<p class="col-span-full text-center text-text-muted">Nenhum bairro cadastrado ainda. Comece a registrar seus imóveis preenchidos.</p>';
             }
-            html += `</div>`;
-            sectorModalContent.innerHTML = html;
+            contentHTML += '</div>';
+
+            sectorModalTitle.textContent = "Minha Área: Bairros";
+            sectorModalContent.innerHTML = contentHTML;
+            sectorBackBtn.classList.add('hidden');
         };
+
+        const renderBlocks = (bairro) => {
+            sectorNavigationStack.push({ view: 'neighborhoods' });
+            const username = document.getElementById('username').value;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            const properties = Object.values(sectorData.properties).filter(p => p.bairro === bairro);
+            const blocks = [...new Set(properties.map(p => p.quarteirao))].sort((a,b) => a-b);
+
+            let contentHTML = `<div class="p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 sector-view">`;
+            blocks.forEach(block => {
+                contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-indigo-500 text-indigo-700 text-lg p-6 sector-block-btn" data-bairro="${bairro}" data-block="${block}">Q. ${block}</button>`;
+            });
+            contentHTML += '</div>';
+
+            sectorModalTitle.textContent = `Bairro: ${bairro}`;
+            sectorModalContent.innerHTML = contentHTML;
+            sectorBackBtn.classList.remove('hidden');
+        };
+
+        const renderProperties = (bairro, block) => {
+            sectorNavigationStack.push({ view: 'blocks', bairro: bairro });
+            const username = document.getElementById('username').value;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            const properties = Object.values(sectorData.properties).filter(p => p.bairro === bairro && p.quarteirao === block);
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Terreno Baldio', 'O': 'Outro' };
+
+            let tableHTML = `
+                <div class="p-4 sector-view">
+                    <div class="overflow-x-auto bg-white rounded-lg shadow">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logradouro</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sector-table-body" class="bg-white divide-y divide-gray-200">
+            `;
+            properties.forEach(prop => {
+                const propertyId = `${prop.bairro}-${prop.quarteirao}-${prop.logradouro}-${prop.numero}-${prop.tipo}`.toLowerCase().replace(/\s+/g, '-');
+                tableHTML += `
+                    <tr data-id="${propertyId}">
+                        <td class="px-6 py-4 whitespace-nowrap">${prop.logradouro}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${prop.numero}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${imovelMap[prop.tipo] || prop.tipo}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button class="delete-property-btn text-red-600 hover:text-red-900" data-id="${propertyId}">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${block}`;
+            sectorModalContent.innerHTML = tableHTML;
+            sectorBackBtn.classList.remove('hidden');
+        };
+
+        const generatePropertyRowHTML = (prop) => {
+            const propertyId = `${prop.bairro}-${prop.quarteirao}-${prop.logradouro}-${prop.numero}-${prop.tipo}`.toLowerCase().replace(/\s+/g, '-');
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Terreno Baldio', 'O': 'Outro' };
+            return `
+                <tr data-id="${propertyId}">
+                    <td class="px-6 py-4 whitespace-nowrap">${prop.bairro}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${prop.quarteirao}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${prop.logradouro}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${prop.numero}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${imovelMap[prop.tipo] || prop.tipo}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <button class="delete-property-btn text-red-600 hover:text-red-900" data-id="${propertyId}">Excluir</button>
+                    </td>
+                </tr>
+            `;
+        }
 
 
         // --- EVENT LISTENERS ---
@@ -1762,128 +1868,191 @@
         calculateVolumeBtn.addEventListener('click', handleVolumeCalculation);
         clearVolumeBtn.addEventListener('click', clearVolumeCalculation);
         document.getElementById('addVisitaBtn').addEventListener('click', addVisitaCard);
-        document.getElementById('savePdfBtn').addEventListener('click', generatePDF);
+        document.getElementById('savePdfBtn').addEventListener('click', generateDailyPDF);
         
         document.getElementById('clearDayBtn').addEventListener('click', () => {
-            showModal("Tem certeza que deseja limpar os dados do dia? Esta ação irá primeiro salvar os imóveis visitados na sua área de atuação antes de limpar.", () => {
-                const dataToProcess = JSON.parse(localStorage.getItem('aceFlowDailyData'));
-                if (dataToProcess) {
-                    const filledVisits = dataToProcess.visits.filter(v => v.bairro && v.logradouro && v.quarteirao && v.lado && v.numero && v.imovel && v.visita);
-                    if (filledVisits.length > 0) {
-                       dataToProcess.visits = filledVisits;
-                       updateSectorData(dataToProcess);
-                    }
-                }
+            showModal("Tem certeza que deseja limpar os dados do dia? Esta ação NÃO salva os dados no histórico. Use 'Gerar PDF' para salvar e finalizar o dia.", () => {
                 localStorage.removeItem('aceFlowDailyData');
                 location.reload();
             });
         });
         
-        aiAnalysisBtn.addEventListener('click', handleAiAnalysis);
-        aiPlanBtn.addEventListener('click', handleAiPlanning);
+        aiCombinedAnalysisBtn.addEventListener('click', handleAiCombinedAnalysis);
         closeAiModalBtn.addEventListener('click', () => aiModal.classList.add('hidden'));
         myAreaBtn.addEventListener('click', displayMyArea);
         closeSectorModalBtn.addEventListener('click', () => sectorModal.classList.add('hidden'));
 
         document.getElementById('reportBtn').addEventListener('click', () => {
             reportModal.classList.remove('hidden');
-            const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
-            const cycles = [...new Set(history.map(entry => entry.header.ciclo))];
-            reportCycleSelector.innerHTML = '<option value="">Todos os Ciclos</option>' + cycles.map(c => `<option value="${c}">${c}</option>`).join('');
-            renderReports();
         });
 
         closeReportModalBtn.addEventListener('click', () => reportModal.classList.add('hidden'));
 
-        document.querySelectorAll('.btn-filter').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('bg-blue-600'));
-                e.target.classList.add('bg-blue-600');
-                reportCycleSelector.value = ""; // Reseta o filtro de ciclo ao clicar em um período
-                renderReports();
-            });
-        });
-
-        reportCycleSelector.addEventListener('change', () => {
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('bg-blue-600'));
-            renderReports();
-        });
-        reportStreetSearch.addEventListener('input', renderReports);
-
-        exportReportBtn.addEventListener('click', () => {
-            if (!currentReportData) {
-                alert('Gere um relatório primeiro.');
-                return;
-            }
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Indicador,Total\r\n";
-            Object.keys(currentReportData).forEach(key => {
-                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                if(typeof currentReportData[key] !== 'object') {
-                    csvContent += `${label},${currentReportData[key]}\r\n`;
-                }
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "relatorio_ace_flow.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+        searchReportBtn.addEventListener('click', renderReports);
         
-        shareReportBtn.addEventListener('click', async () => {
-             if (!currentReportData) {
-                alert('Gere um relatório primeiro.');
+        downloadReportPdfBtn.addEventListener('click', () => {
+            if (!currentReportData) {
+                alert("Gere um relatório primeiro para poder baixar o PDF.");
                 return;
             }
-            let shareText = "Resumo do Relatório ACE FLOW:\n";
-            Object.keys(currentReportData).forEach(key => {
-                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                 if(typeof currentReportData[key] !== 'object') {
-                    shareText += `- ${label}: ${currentReportData[key]}\n`;
-                 }
-            });
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Relatório ACE FLOW',
-                        text: shareText,
-                    });
-                } catch (err) {
-                    console.error('Erro ao compartilhar:', err);
-                }
-            } else {
-                alert('A função de compartilhamento não é suportada neste navegador. Você pode copiar o texto manualmente.');
-            }
-        });
 
+            const doc = new jsPDF();
+            const summary = currentReportData;
+            const startDate = reportStartDate.value;
+            const endDate = reportEndDate.value;
+            const agentName = agenteInput.value;
+            
+            const primaryColor = '#111827';
+            const headerFooterColor = '#9CA3AF';
+            const pageHeight = doc.internal.pageSize.height;
+            let finalY = 0;
+
+            // Função para adicionar cabeçalho e rodapé
+            const addHeaderFooter = () => {
+                const pageCount = doc.internal.getNumberOfPages();
+                for(let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    // Cabeçalho
+                    doc.setFillColor(primaryColor);
+                    doc.rect(0, 0, 210, 20, 'F');
+                    doc.setFontSize(18);
+                    doc.setTextColor('#FFFFFF');
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("Relatório Inteligente de Período", 105, 12, { align: 'center' });
+                    // Rodapé
+                    doc.setFontSize(8);
+                    doc.setTextColor(headerFooterColor);
+                    doc.text(`Página ${i} de ${pageCount}`, 105, pageHeight - 10, { align: 'center' });
+                    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 15, pageHeight - 10);
+                }
+            };
+            
+            // Título principal
+            doc.setFontSize(16);
+            doc.setTextColor(primaryColor);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Agente: ${agentName}`, 15, 30);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Período: ${new Date(startDate + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, 15, 38);
+
+            const tableOptions = {
+                styles: { fontSize: 16, cellPadding: 3 },
+                headStyles: { fillColor: primaryColor, textColor: '#FFFFFF', fontSize: 16, fontStyle: 'bold' },
+                bodyStyles: { textColor: '#374151' },
+                alternateRowStyles: { fillColor: '#F3F4F6' },
+                startY: 45,
+                margin: { left: 15, right: 15 },
+            };
+
+            // Tabela 1: Detalhes dos Imóveis
+            doc.autoTable({
+                ...tableOptions,
+                head: [['Detalhes dos Imóveis Trabalhados', 'Total']],
+                body: [
+                    ['Residências', summary.residencia],
+                    ['Comércios', summary.comercio],
+                    ['Terrenos Baldios', summary.terrenoBaldio],
+                    ['Outros', summary.outro],
+                    [{ content: 'Total Trabalhados', styles: { fontStyle: 'bold' } }, { content: summary.trabalhado, styles: { fontStyle: 'bold' } }]
+                ],
+            });
+            finalY = doc.lastAutoTable.finalY;
+
+            // Tabela 2: Resumo da Produção
+            doc.autoTable({
+                ...tableOptions,
+                startY: finalY + 10,
+                head: [['Resumo da Produção', 'Total']],
+                body: [
+                    ['Tratamentos Focais', summary.tratamentoFocal],
+                    ['Larvicida Utilizado', `${summary.gramas.toFixed(1)} g`],
+                    ['Depósitos Tratados', summary.depositosTratados],
+                    ['Depósitos Eliminados', summary.eliminados],
+                ],
+            });
+            finalY = doc.lastAutoTable.finalY;
+            
+            // Tabela 3: Situação das Visitas
+            doc.autoTable({
+                ...tableOptions,
+                startY: finalY + 10,
+                head: [['Situação das Visitas', 'Total']],
+                body: [
+                    ['Imóveis Fechados', summary.fechado],
+                    ['Recusas', summary.recusado],
+                    [{ content: 'Total de Focos', styles: { fontStyle: 'bold', textColor: '#DC2626' } }, { content: summary.focos, styles: { fontStyle: 'bold', textColor: '#DC2626' } }]
+                ],
+            });
+            finalY = doc.lastAutoTable.finalY;
+
+            // Seção de Pontos de Atenção (Focos)
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Terreno Baldio', 'O': 'Outro' };
+            if(summary.hotspots.length > 0) {
+                finalY += 15;
+                if (finalY > pageHeight - 20) { doc.addPage(); finalY = 30; }
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Pontos de Atenção (Focos)', 15, finalY);
+                finalY += 10;
+                summary.hotspots.forEach(foco => {
+                    if (finalY > pageHeight - 40) { doc.addPage(); finalY = 30; }
+                    doc.setFontSize(16);
+                    doc.setFont('helvetica', 'normal');
+                    const focoText = `Bairro: ${foco.bairro}, Quart.: ${foco.quarteirao}, Rua: ${foco.logradouro}, ${foco.numero}, Tipo: ${imovelMap[foco.tipo] || foco.tipo}`;
+                    const splitText = doc.splitTextToSize(focoText, 180);
+                    doc.text(splitText, 18, finalY);
+                    finalY += (splitText.length * 8) + 3; // Adjust spacing
+                });
+            }
+
+            // Seção de Análise da IA
+            const aiText = document.getElementById('aiReportContent').innerText;
+            if (aiText && aiText !== 'Carregando...') {
+                finalY += 10;
+                if (finalY > pageHeight - 30) { doc.addPage(); finalY = 30; }
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Análise Inteligente do Período', 15, finalY);
+                finalY += 10;
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'normal');
+                const splitText = doc.splitTextToSize(aiText, 180);
+                splitText.forEach(line => {
+                     if (finalY > pageHeight - 20) { doc.addPage(); finalY = 30; }
+                     doc.text(line, 15, finalY);
+                     finalY += 8;
+                });
+            }
+            
+            addHeaderFooter();
+            doc.save(`relatorio_periodo_${agentName.split(' ')[0]}_${new Date().toISOString().slice(0,10)}.pdf`);
+        });
 
         mainContent.addEventListener('input', (e) => {
             const target = e.target;
             
             if (target.matches('.form-input, .form-select')) {
                 target.dataset.manualInput = 'true';
+                if (target.value.trim() !== '') {
+                    target.classList.add('is-filled');
+                } else {
+                    target.classList.remove('is-filled');
+                }
             }
+            
+            // Save data first to ensure the latest changes are captured
+            saveData(); 
 
             const card = target.closest('.visita-card');
             if (card) {
-                updateCardStatus(card);
-            }
-            if (target.value.trim() || (target.matches('.numero') && target.value === 'S/N')) {
-                target.classList.add('is-filled');
-            } else {
-                target.classList.remove('is-filled');
+                updateCardStatus(card); // Now this will call saveCurrentDayToHistory with fresh data
             }
             updateAndRenderSummary();
-            saveData();
         });
         
         mainContent.addEventListener('blur', (e) => {
             const target = e.target;
-            if (target.matches('#agente, #bairro, .logradouro, .bairro-imovel') && target.value) {
+            if (target.matches('input[type="text"]') && target.value) {
                 target.value = formatAndCorrectText(target.value);
             }
             
@@ -2100,6 +2269,109 @@
             createFaqModal(aedesModal, '🦟 Sobre o Vetor, Aedes aegypti: Conheça o Inimigo', "Este pequeno mosquito é um grande problema de saúde pública. Conhecer seus hábitos e ciclo de vida é a chave para um combate eficiente.", aedesQNA);
         });
 
+        // Event Listeners for "Minha Área"
+        sectorModal.addEventListener('submit', (e) => {
+            if (e.target.id === 'add-property-form') {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const sectorKey = `aceFlowSectorData_${username}`;
+                
+                const newBairro = document.getElementById('new-prop-bairro').value.trim();
+                const newQuarteirao = document.getElementById('new-prop-quarteirao').value.trim();
+                const newLogradouro = document.getElementById('new-prop-logradouro').value.trim();
+                const newNumero = document.getElementById('new-prop-numero').value.trim();
+                const newTipo = document.getElementById('new-prop-tipo').value;
+
+                if (!newBairro || !newQuarteirao || !newLogradouro || !newNumero || !newTipo) {
+                    alert('Por favor, preencha todos os campos para adicionar o imóvel.');
+                    return;
+                }
+
+                const newProp = {
+                    bairro: formatAndCorrectText(newBairro),
+                    quarteirao: newQuarteirao,
+                    logradouro: formatAndCorrectText(newLogradouro),
+                    numero: newNumero,
+                    tipo: newTipo
+                };
+
+                const propertyId = `${newProp.bairro}-${newProp.quarteirao}-${newProp.logradouro}-${newProp.numero}-${newProp.tipo}`.toLowerCase().replace(/\s+/g, '-');
+                
+                let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+
+                if (sectorData.properties[propertyId]) {
+                    alert('Este imóvel já está cadastrado.');
+                    return;
+                }
+
+                sectorData.properties[propertyId] = newProp;
+                localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                
+                const tableBody = document.getElementById('sector-table-body');
+                tableBody.insertAdjacentHTML('beforeend', generatePropertyRowHTML(newProp));
+                e.target.reset();
+                ['#new-prop-bairro', '#new-prop-quarteirao', '#new-prop-logradouro', '#new-prop-numero', '#new-prop-tipo'].forEach(sel => {
+                    document.querySelector(sel).classList.remove('is-filled');
+                });
+            }
+        });
+
+        sectorModal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-property-btn')) {
+                const propertyId = e.target.dataset.id;
+                const row = e.target.closest('tr');
+                
+                const username = document.getElementById('username').value;
+                const sectorKey = `aceFlowSectorData_${username}`;
+                let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+                
+                const keyToDelete = Object.keys(sectorData.properties).find(key => 
+                    `${sectorData.properties[key].bairro}-${sectorData.properties[key].quarteirao}-${sectorData.properties[key].logradouro}-${sectorData.properties[key].numero}-${sectorData.properties[key].tipo}`.toLowerCase().replace(/\s+/g, '-') === propertyId
+                );
+
+                if (keyToDelete) {
+                    delete sectorData.properties[keyToDelete];
+                    localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                    row.remove();
+                }
+            } else if (e.target.closest('.sector-neighborhood-btn')) {
+                const bairro = e.target.closest('.sector-neighborhood-btn').dataset.bairro;
+                renderBlocks(bairro);
+            } else if (e.target.closest('.sector-block-btn')) {
+                const { bairro, block } = e.target.closest('.sector-block-btn').dataset;
+                renderProperties(bairro, block);
+            }
+        });
+        
+        sectorBackBtn.addEventListener('click', () => {
+            const lastView = sectorNavigationStack.pop();
+            if (lastView) {
+                if (lastView.view === 'neighborhoods') {
+                    renderNeighborhoods();
+                } else if (lastView.view === 'blocks') {
+                    renderBlocks(lastView.bairro);
+                }
+            }
+        });
+
+        sectorModal.addEventListener('input', (e) => {
+            if(e.target.matches('#add-property-form .form-input, #add-property-form .form-select')) {
+                 if (e.target.value.trim() !== '') {
+                    e.target.classList.add('is-filled');
+                } else {
+                    e.target.classList.remove('is-filled');
+                }
+            }
+        });
+
+        sectorModal.addEventListener('blur', (e) => {
+            if(e.target.matches('#new-prop-bairro, #new-prop-logradouro')) {
+                 if (e.target.value) {
+                    e.target.value = formatAndCorrectText(e.target.value);
+                }
+            }
+        }, true);
+
 
         const initApp = () => {
              // Animação da Landing Page
@@ -2120,7 +2392,13 @@
             bairroSuggestions.innerHTML = bairroList.map(item => `<option value="${item}"></option>`).join('');
             streetSuggestions.innerHTML = streetList.map(item => `<option value="${item}"></option>`).join('');
             populateSelects();
-            dataInput.value = new Date().toISOString().slice(0, 10);
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dataInput.value = `${year}-${month}-${day}`;
+            
             dataInput.classList.add('is-filled');
             loadGoalData();
         };
