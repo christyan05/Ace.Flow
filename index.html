@@ -52,7 +52,7 @@
             // --- SERVICE WORKER ---
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    const CACHE_NAME = 'ace-flow-cache-v75'; // Cache version bumped
+                    const CACHE_NAME = 'ace-flow-cache-v76'; // Cache version bumped
                     const PRECACHE_ASSETS = [
                         '.',
                         'https://cdn.tailwindcss.com',
@@ -1473,83 +1473,15 @@
             
             currentReportData = summary;
 
-            const createCard = (title, value, unit = '', colorClass = 'text-gray-800', delay = 0, isFloat = false) => {
-                const cardId = `report-card-${title.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                return `
-                    <div class="report-card text-center" style="animation-delay: ${delay}ms;">
-                        <h3 class="report-card-title">${title}</h3>
-                        <p class="${colorClass}">
-                            <span id="${cardId}" class="report-card-value">0</span>
-                            <span class="report-card-unit">${unit}</span>
-                        </p>
-                    </div>
-                `;
-            };
-
             reportDataContainer.innerHTML = `
-                <div>
-                    <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Detalhes dos Imóveis Trabalhados</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        ${createCard('Residências', summary.residencia, '', 'text-blue-600', 0)}
-                        ${createCard('Comércios', summary.comercio, '', 'text-purple-600', 50)}
-                        ${createCard('Ter. Baldios', summary.terrenoBaldio, '', 'text-yellow-600', 100)}
-                        ${createCard('Outros', summary.outro, '', 'text-gray-600', 150)}
-                    </div>
-                    <div class="mt-4">
-                        ${createCard('Total Trabalhados', summary.trabalhado, '', 'text-green-600 font-black', 200)}
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Resumo da Produção</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        ${createCard('Trat. Focal', summary.tratamentoFocal, '', 'text-indigo-600', 250)}
-                        ${createCard('Larvicida', summary.gramas, 'g', 'text-teal-600', 300, true)}
-                        ${createCard('Dep. Tratados', summary.depositosTratados, '', 'text-cyan-600', 350)}
-                        ${createCard('Eliminados', summary.eliminados, '', 'text-lime-600', 400)}
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold mb-4 text-center text-gray-700">Situação das Visitas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        ${createCard('Fechados', summary.fechado, '', 'text-gray-500', 450)}
-                        ${createCard('Recusados', summary.recusado, '', 'text-orange-600', 500)}
-                        ${createCard('Focos', summary.focos, '', 'text-red-600 font-black', 550)}
-                    </div>
-                </div>
-                <div id="hotspotContainer" class="card p-4">
-                    <h3 class="font-bold text-lg text-center mb-2 text-red-600">Pontos de Atenção (Focos)</h3>
-                    <div id="hotspotContent"></div>
+                <div class="text-center p-8 bg-green-50 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="mt-4 text-2xl font-bold text-gray-800">Relatório Pronto!</h3>
+                    <p class="mt-2 text-text-muted">Seu compilado de dados para o período selecionado está pronto. Clique em "Baixar PDF" para salvar o documento.</p>
                 </div>
             `;
-            
-            // Animate values
-            animateValue(document.getElementById('report-card-Residências'), 0, summary.residencia, 1000);
-            animateValue(document.getElementById('report-card-Comércios'), 0, summary.comercio, 1000);
-            animateValue(document.getElementById('report-card-Ter--Baldios'), 0, summary.terrenoBaldio, 1000);
-            animateValue(document.getElementById('report-card-Outros'), 0, summary.outro, 1000);
-            animateValue(document.getElementById('report-card-Total-Trabalhados'), 0, summary.trabalhado, 1000);
-            animateValue(document.getElementById('report-card-Trat--Focal'), 0, summary.tratamentoFocal, 1000);
-            animateValue(document.getElementById('report-card-Larvicida'), 0, summary.gramas, 1000, true);
-            animateValue(document.getElementById('report-card-Dep--Tratados'), 0, summary.depositosTratados, 1000);
-            animateValue(document.getElementById('report-card-Eliminados'), 0, summary.eliminados, 1000);
-            animateValue(document.getElementById('report-card-Fechados'), 0, summary.fechado, 1000);
-            animateValue(document.getElementById('report-card-Recusados'), 0, summary.recusado, 1000);
-            animateValue(document.getElementById('report-card-Focos'), 0, summary.focos, 1000);
-
-
-            // Render Hotspots
-            const hotspotContent = document.getElementById('hotspotContent');
-            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Terreno Baldio', 'O': 'Outro' };
-            if (summary.hotspots.length > 0) {
-                let hotspotHTML = '<ul class="list-none space-y-3">';
-                summary.hotspots.forEach(foco => {
-                    hotspotHTML += `<li class="p-3 bg-red-50 border-l-4 border-red-500 rounded"><span class="font-bold text-red-700">Foco Encontrado:</span><br><span class="text-gray-800">Bairro: <strong>${foco.bairro}</strong>, Quart.: <strong>${foco.quarteirao}</strong><br>Endereço: <strong>${foco.logradouro}, ${foco.numero}</strong><br>Tipo: <strong>${imovelMap[foco.tipo] || foco.tipo}</strong></span></li>`;
-                });
-                hotspotHTML += '</ul>';
-                hotspotContent.innerHTML = hotspotHTML;
-            } else {
-                hotspotContent.innerHTML = '<p class="text-center text-green-600 font-semibold">Nenhum foco encontrado no período. Excelente trabalho!</p>';
-            }
         };
         
         const handleVolumeCalculation = () => {
