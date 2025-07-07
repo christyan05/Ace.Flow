@@ -321,6 +321,10 @@
             cursor: pointer;
             padding: 0.5rem;
         }
+        .card.card-completed {
+            border: 2px solid var(--confirm-green);
+            background-color: #f0fdf4;
+        }
 
     </style>
 </head>
@@ -622,6 +626,10 @@
                 </div>
             </details>
         </section>
+        
+        <div class="text-center mt-8">
+            <button id="backToHomeBtn" class="btn bg-gray-500 hover:bg-gray-600 text-white">Voltar ao Início</button>
+        </div>
 
         <footer class="text-center mt-12 py-8 border-t-2 border-dashed border-border-color">
             <h2 class="text-4xl font-extrabold text-khaki-base glow-text">ACE FLOW</h2>
@@ -798,6 +806,7 @@
         const dengueModal = document.getElementById('dengueModal');
         const aedesModal = document.getElementById('aedesModal');
         const basicKnowledgeModal = document.getElementById('basicKnowledgeModal');
+        const backToHomeBtn = document.getElementById('backToHomeBtn');
 
 
         // --- LÓGICA DA LANDING PAGE E PWA ---
@@ -1003,11 +1012,13 @@
             });
 
             statusIndicator.classList.remove('text-alert-red', 'text-orange-500', 'text-confirm-green');
+            cardElement.classList.remove('card-completed');
             const isFullyFilled = filledCount >= requiredSelectors.length;
             
             if (isFullyFilled) {
                 statusIndicator.textContent = '✅ Preenchido';
                 statusIndicator.classList.add('text-confirm-green');
+                cardElement.classList.add('card-completed');
                 if (!horarioInput.value) {
                     const now = new Date();
                     const hours = String(now.getHours()).padStart(2, '0');
@@ -1699,6 +1710,7 @@
                 body: JSON.stringify(authPayload)
             }).then(res => res.json()).then(result => {
                 if (result.status === 'success') {
+                    localStorage.setItem('aceFlowUser', JSON.stringify({ username: user, isLoggedIn: true }));
                     loginModal.style.display = 'none';
                     mainContent.classList.remove('hidden');
                     fixedInfoBar.classList.remove('hidden');
@@ -2230,16 +2242,28 @@
 
 
         const initApp = () => {
-             // Animação da Landing Page
-            const sections = document.querySelectorAll('.fade-in-section');
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
-                    }
-                });
-            }, { threshold: 0.1 });
-            sections.forEach(section => observer.observe(section));
+            const savedUser = JSON.parse(localStorage.getItem('aceFlowUser'));
+            if (savedUser && savedUser.isLoggedIn) {
+                landingPage.style.display = 'none';
+                loginModal.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                fixedInfoBar.classList.remove('hidden');
+                agenteInput.value = savedUser.username;
+                agenteInput.classList.add('is-filled');
+                fixedAgentName.textContent = savedUser.username;
+                loadData();
+                updateAndRenderSummary();
+            } else {
+                const sections = document.querySelectorAll('.fade-in-section');
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                        }
+                    });
+                }, { threshold: 0.1 });
+                sections.forEach(section => observer.observe(section));
+            }
 
             agentList = JSON.parse(localStorage.getItem('aceFlowagentList')) || [];
             bairroList = JSON.parse(localStorage.getItem('aceFlowbairroList')) || [];
@@ -2258,6 +2282,11 @@
             dataInput.classList.add('is-filled');
             loadGoalData();
         };
+        
+        backToHomeBtn.addEventListener('click', () => {
+            localStorage.removeItem('aceFlowUser');
+            location.reload();
+        });
         
         initApp();
     });
