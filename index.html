@@ -576,6 +576,12 @@
 
         <section class="space-y-4">
             <h2 class="section-title text-center mt-8 mb-4">Registros de Visita</h2>
+            <div id="reminderSection" class="hidden mb-4 card p-4 bg-amber-50 border-amber-300">
+                <p class="font-semibold text-amber-800">
+                    <span class="font-bold">Lembrete:</span> Último imóvel trabalhado no dia anterior: 
+                    <span id="lastPropertyReminder" class="font-mono"></span>
+                </p>
+            </div>
             <div id="visitasContainer" class="space-y-3"></div>
             <button id="addVisitaBtn" class="btn bg-black text-white hover:bg-gray-800 w-full text-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -807,6 +813,8 @@
         const aedesModal = document.getElementById('aedesModal');
         const basicKnowledgeModal = document.getElementById('basicKnowledgeModal');
         const backToHomeBtn = document.getElementById('backToHomeBtn');
+        const reminderSection = document.getElementById('reminderSection');
+        const lastPropertyReminder = document.getElementById('lastPropertyReminder');
 
 
         // --- LÓGICA DA LANDING PAGE E PWA ---
@@ -917,6 +925,17 @@
                                 <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
                             </div>
+                        </div>
+                        <div class="border-t border-border-color pt-4 mt-4 space-y-2">
+                            <label class="text-sm font-bold text-text-muted">Observações do imóvel:</label>
+                            <textarea class="form-input observacoes" rows="2" placeholder="Anote aqui qualquer detalhe importante..."></textarea>
+                        </div>
+                        <div class="border-t border-border-color pt-4 mt-4 space-y-2">
+                             <label class="text-sm font-bold text-text-muted">Fotos:</label>
+                             <p class="text-xs text-text-muted italic">Adicione fotos para documentar seu trabalho ou como prova de visita.</p>
+                             <input type="file" class="hidden photo-upload" accept="image/*" multiple data-index="${index}">
+                             <button type="button" class="btn bg-gray-200 hover:bg-gray-300 text-black w-full" onclick="document.querySelector('.photo-upload[data-index=\\'${index}\\']').click()">Anexar Fotos</button>
+                             <div class="photo-preview grid grid-cols-3 gap-2 mt-2"></div>
                         </div>
                     </div>
                 </div>
@@ -1192,6 +1211,10 @@
                  visits: []
              };
              document.querySelectorAll('.visita-card').forEach(card => {
+                 const photoPreview = card.querySelector('.photo-preview');
+                 const photos = [];
+                 photoPreview.querySelectorAll('img').forEach(img => photos.push(img.src));
+
                  data.visits.push({
                      bairro: card.querySelector('.bairro-imovel').value,
                      logradouro: card.querySelector('.logradouro').value, 
@@ -1206,6 +1229,8 @@
                      dep: card.querySelector('.dep').value,
                      foco: card.querySelector('.foco').classList.contains('is-checked'),
                      horario: card.querySelector('.horario').value,
+                     observacoes: card.querySelector('.observacoes').value,
+                     photos: photos,
                      isExpanded: card.querySelector('.card-header').getAttribute('data-expanded') === 'true'
                  });
              });
@@ -1242,6 +1267,15 @@
                     const el = card.querySelector(selector);
                     if (el) {
                         if (el.classList.contains('toggle-check')) { if(visitData[key]) el.classList.add('is-checked');}
+                        else if (key === 'photos' && Array.isArray(visitData[key])) {
+                            const previewContainer = card.querySelector('.photo-preview');
+                            visitData[key].forEach(src => {
+                                const img = document.createElement('img');
+                                img.src = src;
+                                img.className = 'w-full h-24 object-cover rounded-md';
+                                previewContainer.appendChild(img);
+                            });
+                        }
                         else { el.value = visitData[key]; }
                     }
                 });
@@ -1256,6 +1290,28 @@
             });
         };
         
+        const saveLastPropertyReminder = () => {
+            const filledCards = [...document.querySelectorAll('.visita-card')].filter(card => card.classList.contains('card-completed'));
+            if (filledCards.length > 0) {
+                const lastCard = filledCards[filledCards.length - 1];
+                const bairro = lastCard.querySelector('.bairro-imovel').value;
+                const logradouro = lastCard.querySelector('.logradouro').value;
+                const numero = lastCard.querySelector('.numero').value;
+                const reminderText = `${bairro} - ${logradouro}, ${numero}`;
+                localStorage.setItem('aceFlowLastProperty', reminderText);
+            }
+        };
+
+        const displayLastPropertyReminder = () => {
+            const reminderText = localStorage.getItem('aceFlowLastProperty');
+            if (reminderText) {
+                lastPropertyReminder.textContent = reminderText;
+                reminderSection.classList.remove('hidden');
+            } else {
+                reminderSection.classList.add('hidden');
+            }
+        };
+
         const saveCurrentDayToHistory = (showSuccessAlert = true) => {
             const dailyData = JSON.parse(localStorage.getItem('aceFlowDailyData'));
             if (!dailyData || !dailyData.header.data) {
@@ -1281,6 +1337,7 @@
         };
 
         const generateDailyPDF = () => {
+            saveLastPropertyReminder();
             if (!saveCurrentDayToHistory(true)) return; // Salva com alerta antes de gerar o PDF
 
             const doc = new jsPDF();
@@ -1383,6 +1440,39 @@
                 styles: { fontSize: 10 },
             });
             
+            // Add observations and photos
+            let finalY = doc.lastAutoTable.finalY;
+            filledVisits.forEach((v, i) => {
+                if (v.observacoes || (v.photos && v.photos.length > 0)) {
+                    finalY += 10;
+                    if (finalY > 280) { doc.addPage(); finalY = 20; }
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Detalhes do Imóvel #${i+1}: ${v.logradouro}, ${v.numero}`, 15, finalY);
+                    finalY += 7;
+
+                    if (v.observacoes) {
+                        doc.setFont('helvetica', 'normal');
+                        const obsText = doc.splitTextToSize(`Observações: ${v.observacoes}`, 180);
+                        doc.text(obsText, 15, finalY);
+                        finalY += obsText.length * 5;
+                    }
+
+                    if (v.photos && v.photos.length > 0) {
+                        finalY += 5;
+                        v.photos.forEach(photoSrc => {
+                            if (finalY > 220) { doc.addPage(); finalY = 20; }
+                            try {
+                                doc.addImage(photoSrc, 'JPEG', 15, finalY, 60, 45);
+                                finalY += 50;
+                            } catch(e) {
+                                console.error("Erro ao adicionar imagem ao PDF:", e);
+                            }
+                        });
+                    }
+                }
+            });
+
             doc.save(`ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
         };
         
@@ -1736,8 +1826,11 @@
         
         document.getElementById('clearDayBtn').addEventListener('click', () => {
             showModal("Tem certeza que deseja limpar os dados do dia? Esta ação NÃO salva os dados no histórico. Use 'Gerar PDF' para salvar e finalizar o dia.", () => {
+                saveLastPropertyReminder();
                 localStorage.removeItem('aceFlowDailyData');
-                location.reload();
+                loadData();
+                updateAndRenderSummary();
+                displayLastPropertyReminder();
             });
         });
         
@@ -2281,6 +2374,7 @@
             
             dataInput.classList.add('is-filled');
             loadGoalData();
+            displayLastPropertyReminder();
         };
         
         backToHomeBtn.addEventListener('click', () => {
