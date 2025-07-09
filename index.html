@@ -697,16 +697,18 @@
     </div>
     
     <div id="sectorModal" class="fixed inset-0 z-50 modal hidden">
-         <div class="card p-4 md:p-6 w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
-            <header class="flex justify-between items-center border-b pb-3 mb-4">
+         <div class="card p-0 w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
+            <header class="flex justify-between items-center border-b p-4">
                 <button id="sectorBackBtn" class="sector-back-btn hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
                 </button>
                 <h2 id="sectorModalTitle" class="section-title flex-grow text-center">Minha Área de Atuação</h2>
                 <button id="closeSectorModalBtn" class="text-3xl font-bold">&times;</button>
             </header>
-            <div id="sectorModalContent" class="flex-grow overflow-y-auto relative">
+            <div id="sectorModalContent" class="flex-grow overflow-y-auto relative p-4">
             </div>
+            <footer id="sectorModalFooter" class="p-4 border-t">
+            </footer>
         </div>
     </div>
 
@@ -800,6 +802,7 @@
         const sectorModalTitle = document.getElementById('sectorModalTitle');
         const sectorBackBtn = document.getElementById('sectorBackBtn');
         const closeSectorModalBtn = document.getElementById('closeSectorModalBtn');
+        const sectorModalFooter = document.getElementById('sectorModalFooter');
         // Seletores de Backup/Restauração
         const backupBtn = document.getElementById('backupBtn');
         const restoreInput = document.getElementById('restoreInput');
