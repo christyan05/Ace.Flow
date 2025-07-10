@@ -52,7 +52,7 @@
             // --- SERVICE WORKER ---
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    const CACHE_NAME = 'ace-flow-cache-v76'; // Cache version bumped
+                    const CACHE_NAME = 'ace-flow-cache-v82'; // Cache version bumped
                     const PRECACHE_ASSETS = [
                         '.',
                         'https://cdn.tailwindcss.com',
@@ -142,6 +142,13 @@
             outline: none; border-color: var(--khaki-base); box-shadow: 0 0 0 3px rgba(195, 176, 145, 0.4);
         }
         .form-input.is-filled, .form-select.is-filled { border-color: var(--confirm-green); }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            box-shadow: 0 0 0 30px white inset !important;
+        }
         .btn {
             padding: 0.8rem 1.25rem; border-radius: 0.5rem; font-weight: 700; transition: all 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; border: none;
@@ -544,7 +551,7 @@
             </details>
         </section>
         
-        <section class="card p-4 md:p-6 mb-6">
+        <section id="info-dia-section" class="card p-4 md:p-6 mb-6">
             <h2 class="section-title border-b border-border-color pb-3 mb-4">Informações do Dia</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -818,6 +825,7 @@
         const backToHomeBtn = document.getElementById('backToHomeBtn');
         const reminderSection = document.getElementById('reminderSection');
         const lastPropertyReminder = document.getElementById('lastPropertyReminder');
+        const infoDiaSection = document.getElementById('info-dia-section');
 
 
         // --- LÓGICA DA LANDING PAGE E PWA ---
@@ -928,17 +936,6 @@
                                 <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
                             </div>
-                        </div>
-                        <div class="border-t border-border-color pt-4 mt-4 space-y-2">
-                            <label class="text-sm font-bold text-text-muted">Observações do imóvel:</label>
-                            <textarea class="form-input observacoes" rows="2" placeholder="Anote aqui qualquer detalhe importante..."></textarea>
-                        </div>
-                        <div class="border-t border-border-color pt-4 mt-4 space-y-2">
-                             <label class="text-sm font-bold text-text-muted">Fotos:</label>
-                             <p class="text-xs text-text-muted italic">Adicione fotos para documentar seu trabalho ou como prova de visita.</p>
-                             <input type="file" class="hidden photo-upload" accept="image/*" multiple data-index="${index}">
-                             <button type="button" class="btn bg-gray-200 hover:bg-gray-300 text-black w-full" onclick="document.querySelector('.photo-upload[data-index=\\'${index}\\']').click()">Anexar Fotos</button>
-                             <div class="photo-preview grid grid-cols-3 gap-2 mt-2"></div>
                         </div>
                     </div>
                 </div>
@@ -1214,10 +1211,6 @@
                  visits: []
              };
              document.querySelectorAll('.visita-card').forEach(card => {
-                 const photoPreview = card.querySelector('.photo-preview');
-                 const photos = [];
-                 photoPreview.querySelectorAll('img').forEach(img => photos.push(img.src));
-
                  data.visits.push({
                      bairro: card.querySelector('.bairro-imovel').value,
                      logradouro: card.querySelector('.logradouro').value, 
@@ -1232,8 +1225,6 @@
                      dep: card.querySelector('.dep').value,
                      foco: card.querySelector('.foco').classList.contains('is-checked'),
                      horario: card.querySelector('.horario').value,
-                     observacoes: card.querySelector('.observacoes').value,
-                     photos: photos,
                      isExpanded: card.querySelector('.card-header').getAttribute('data-expanded') === 'true'
                  });
              });
@@ -1270,15 +1261,6 @@
                     const el = card.querySelector(selector);
                     if (el) {
                         if (el.classList.contains('toggle-check')) { if(visitData[key]) el.classList.add('is-checked');}
-                        else if (key === 'photos' && Array.isArray(visitData[key])) {
-                            const previewContainer = card.querySelector('.photo-preview');
-                            visitData[key].forEach(src => {
-                                const img = document.createElement('img');
-                                img.src = src;
-                                img.className = 'w-full h-24 object-cover rounded-md';
-                                previewContainer.appendChild(img);
-                            });
-                        }
                         else { el.value = visitData[key]; }
                     }
                 });
@@ -1443,39 +1425,6 @@
                 styles: { fontSize: 10 },
             });
             
-            // Add observations and photos
-            let finalY = doc.lastAutoTable.finalY;
-            filledVisits.forEach((v, i) => {
-                if (v.observacoes || (v.photos && v.photos.length > 0)) {
-                    finalY += 10;
-                    if (finalY > 280) { doc.addPage(); finalY = 20; }
-                    doc.setFontSize(12);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(`Detalhes do Imóvel #${i+1}: ${v.logradouro}, ${v.numero}`, 15, finalY);
-                    finalY += 7;
-
-                    if (v.observacoes) {
-                        doc.setFont('helvetica', 'normal');
-                        const obsText = doc.splitTextToSize(`Observações: ${v.observacoes}`, 180);
-                        doc.text(obsText, 15, finalY);
-                        finalY += obsText.length * 5;
-                    }
-
-                    if (v.photos && v.photos.length > 0) {
-                        finalY += 5;
-                        v.photos.forEach(photoSrc => {
-                            if (finalY > 220) { doc.addPage(); finalY = 20; }
-                            try {
-                                doc.addImage(photoSrc, 'JPEG', 15, finalY, 60, 45);
-                                finalY += 50;
-                            } catch(e) {
-                                console.error("Erro ao adicionar imagem ao PDF:", e);
-                            }
-                        });
-                    }
-                }
-            });
-
             doc.save(`ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
         };
         
@@ -1652,25 +1601,27 @@
         };
 
         const updateSectorData = (dailyData) => {
-            const username = document.getElementById('username').value;
+            const username = agenteInput.value;
             if (!username) return;
 
             const sectorKey = `aceFlowSectorData_${username}`;
             let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
 
-            for (const visit of dailyData.visits) {
-                if (visit.bairro && visit.quarteirao && visit.logradouro && visit.numero && visit.imovel) {
-                    const propertyId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}-${visit.imovel}`.toLowerCase().replace(/\s+/g, '-');
-                    
-                    if (!sectorData.properties[propertyId]) {
-                         sectorData.properties[propertyId] = {
-                            bairro: visit.bairro,
-                            quarteirao: visit.quarteirao,
-                            logradouro: visit.logradouro,
-                            numero: visit.numero,
-                            tipo: visit.imovel // Store property type
-                        };
-                    }
+            const completedVisits = dailyData.visits.filter(v => 
+                v.bairro && v.quarteirao && v.logradouro && v.numero && v.imovel && v.visita
+            );
+
+            for (const visit of completedVisits) {
+                const propertyId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}-${visit.imovel}`.toLowerCase().replace(/\s+/g, '-');
+                
+                if (!sectorData.properties[propertyId]) {
+                     sectorData.properties[propertyId] = {
+                        bairro: visit.bairro,
+                        quarteirao: visit.quarteirao,
+                        logradouro: visit.logradouro,
+                        numero: visit.numero,
+                        tipo: visit.imovel
+                    };
                 }
             }
             localStorage.setItem(sectorKey, JSON.stringify(sectorData));
@@ -1683,7 +1634,7 @@
         };
 
         const renderNeighborhoods = () => {
-            const username = document.getElementById('username').value;
+            const username = agenteInput.value;
             const sectorKey = `aceFlowSectorData_${username}`;
             const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
             const properties = Object.values(sectorData.properties);
@@ -1702,12 +1653,86 @@
 
             sectorModalTitle.textContent = "Minha Área: Bairros";
             sectorModalContent.innerHTML = contentHTML;
+            sectorModalFooter.innerHTML = `<div class="flex gap-4"><button id="addPropertyManualBtn" class="btn bg-indigo-600 text-white flex-1">Cadastrar Novo Imóvel</button><button id="exportAreaPdfBtn" class="btn bg-red-700 text-white flex-1">Exportar Área para PDF</button></div>`;
             sectorBackBtn.classList.add('hidden');
+
+            document.getElementById('addPropertyManualBtn').addEventListener('click', showAddPropertyForm);
+            document.getElementById('exportAreaPdfBtn').addEventListener('click', exportAreaToPdf);
+        };
+
+        const showAddPropertyForm = () => {
+            sectorNavigationStack.push({ view: 'neighborhoods' });
+            sectorModalTitle.textContent = "Cadastrar Novo Imóvel";
+            sectorModalContent.innerHTML = `
+                <div class="p-4 space-y-4 sector-view">
+                    <form id="add-property-form" class="space-y-4">
+                        <div><label class="text-sm font-bold text-text-muted">Bairro</label><input type="text" id="new-prop-bairro" placeholder="Bairro" class="form-input mt-1" required></div>
+                        <div><label class="text-sm font-bold text-text-muted">Quarteirão</label><input type="number" min="1" id="new-prop-quarteirao" placeholder="Quarteirão" class="form-input mt-1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required></div>
+                        <div><label class="text-sm font-bold text-text-muted">Logradouro/Rua</label><input type="text" id="new-prop-logradouro" placeholder="Logradouro" class="form-input mt-1" required></div>
+                        <div><label class="text-sm font-bold text-text-muted">Número</label><input type="number" min="0" id="new-prop-numero" placeholder="Número" class="form-input mt-1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required></div>
+                        <div>
+                            <label class="text-sm font-bold text-text-muted">Tipo de Imóvel</label>
+                            <select id="new-prop-tipo" class="form-select mt-1" required>
+                                <option value="" disabled selected>Selecione o tipo</option>
+                                <option value="R">Residência</option>
+                                <option value="C">Comércio</option>
+                                <option value="TB">Terreno Baldio</option>
+                                <option value="O">Outro</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn bg-green-700 text-white w-full">Salvar Imóvel</button>
+                    </form>
+                </div>
+            `;
+            sectorModalFooter.innerHTML = ''; // Hide the "Cadastrar" button
+            sectorBackBtn.classList.remove('hidden');
+
+            document.getElementById('add-property-form').addEventListener('submit', handleAddPropertyFormSubmit);
+        };
+
+        const handleAddPropertyFormSubmit = (e) => {
+            e.preventDefault();
+            const username = agenteInput.value;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            
+            const newBairro = document.getElementById('new-prop-bairro').value.trim();
+            const newQuarteirao = document.getElementById('new-prop-quarteirao').value.trim();
+            const newLogradouro = document.getElementById('new-prop-logradouro').value.trim();
+            const newNumero = document.getElementById('new-prop-numero').value.trim();
+            const newTipo = document.getElementById('new-prop-tipo').value;
+
+            if (!newBairro || !newQuarteirao || !newLogradouro || !newNumero || !newTipo) {
+                alert('Por favor, preencha todos os campos para adicionar o imóvel.');
+                return;
+            }
+
+            const newProp = {
+                bairro: formatAndCorrectText(newBairro),
+                quarteirao: newQuarteirao,
+                logradouro: formatAndCorrectText(newLogradouro),
+                numero: newNumero,
+                tipo: newTipo
+            };
+
+            const propertyId = `${newProp.bairro}-${newProp.quarteirao}-${newProp.logradouro}-${newProp.numero}-${newProp.tipo}`.toLowerCase().replace(/\s+/g, '-');
+            
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+
+            if (sectorData.properties[propertyId]) {
+                alert('Este imóvel já está cadastrado.');
+                return;
+            }
+
+            sectorData.properties[propertyId] = newProp;
+            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+            
+            alert('Imóvel cadastrado com sucesso!');
+            renderNeighborhoods(); // Go back to the main view of "Minha Área"
         };
 
         const renderBlocks = (bairro) => {
             sectorNavigationStack.push({ view: 'neighborhoods' });
-            const username = document.getElementById('username').value;
+            const username = agenteInput.value;
             const sectorKey = `aceFlowSectorData_${username}`;
             const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
             const properties = Object.values(sectorData.properties).filter(p => p.bairro === bairro);
@@ -1726,7 +1751,7 @@
 
         const renderProperties = (bairro, block) => {
             sectorNavigationStack.push({ view: 'blocks', bairro: bairro });
-            const username = document.getElementById('username').value;
+            const username = agenteInput.value;
             const sectorKey = `aceFlowSectorData_${username}`;
             const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
             const properties = Object.values(sectorData.properties).filter(p => p.bairro === bairro && p.quarteirao === block);
@@ -1787,6 +1812,117 @@
                 </tr>
             `;
         }
+
+        const exportAreaToPdf = () => {
+            const username = agenteInput.value;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            const properties = Object.values(sectorData.properties);
+
+            if (properties.length === 0) {
+                alert("Não há imóveis cadastrados para exportar.");
+                return;
+            }
+
+            const doc = new jsPDF();
+            const agentName = agenteInput.value;
+            const primaryColor = '#111827';
+            const headerFooterColor = '#9CA3AF';
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFillColor(primaryColor);
+            doc.rect(0, 0, 210, 25, 'F');
+            doc.setFontSize(22);
+            doc.setTextColor('#FFFFFF');
+            doc.setFont('helvetica', 'bold');
+            doc.text("ACE FLOW", 15, 17);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text("Relatório de Área de Atuação", 105, 17, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.setTextColor(primaryColor);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Agente: ${agentName}`, 15, 35);
+
+            const groupedByBairro = properties.reduce((acc, prop) => {
+                (acc[prop.bairro] = acc[prop.bairro] || []).push(prop);
+                return acc;
+            }, {});
+
+            let lastY = 40;
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Terreno Baldio', 'O': 'Outro' };
+
+            Object.keys(groupedByBairro).sort().forEach(bairro => {
+                const bairroProperties = groupedByBairro[bairro];
+                
+                const groupedByQuarteirao = bairroProperties.reduce((acc, prop) => {
+                    (acc[prop.quarteirao] = acc[prop.quarteirao] || []).push(prop);
+                    return acc;
+                }, {});
+
+                if (lastY > 250) { // Check for page break before Bairro
+                    doc.addPage();
+                    lastY = 20;
+                }
+
+                doc.autoTable({
+                    startY: lastY,
+                    head: [[{ content: `Bairro: ${bairro}`, colSpan: 3, styles: { halign: 'center', fillColor: [220, 220, 220], textColor: [0,0,0], fontStyle: 'bold', fontSize: 18 } }]],
+                    theme: 'grid'
+                });
+                lastY = doc.lastAutoTable.finalY;
+
+                Object.keys(groupedByQuarteirao).sort((a, b) => parseInt(a) - parseInt(b)).forEach(quarteirao => {
+                    const rows = groupedByQuarteirao[quarteirao].map(prop => [
+                        prop.logradouro,
+                        prop.numero,
+                        imovelMap[prop.tipo] || prop.tipo
+                    ]);
+
+                     if (lastY > 250) { // Check for page break before Quarteirão
+                        doc.addPage();
+                        lastY = 20;
+                     }
+
+                    doc.autoTable({
+                        startY: lastY,
+                        head: [[{ content: `Quarteirão: ${quarteirao}`, colSpan: 3, styles: { halign: 'center', fillColor: [240, 240, 240], textColor: [0,0,0], fontStyle: 'bold', fontSize: 16 } }]],
+                        theme: 'grid'
+                    });
+                    lastY = doc.lastAutoTable.finalY;
+                    
+                    doc.autoTable({
+                        startY: lastY,
+                        head: [['Logradouro', 'Número', 'Tipo']],
+                        body: rows,
+                        theme: 'striped',
+                        styles: { fontSize: 16 },
+                        headStyles: { fillColor: [100, 100, 100], fontSize: 16 }
+                    });
+                    lastY = doc.lastAutoTable.finalY;
+                });
+                lastY += 10;
+            });
+
+            doc.save(`Area_de_Trabalho_${agentName.replace(/\s/g, '_')}.pdf`);
+        };
+
+        const updateInfoDiaStatus = () => {
+            const requiredFields = infoDiaSection.querySelectorAll('input[required], select[required]');
+            let allFilled = true;
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    allFilled = false;
+                }
+            });
+
+            if (allFilled) {
+                infoDiaSection.classList.add('card-completed');
+            } else {
+                infoDiaSection.classList.remove('card-completed');
+            }
+        };
 
 
         // --- EVENT LISTENERS ---
@@ -1964,7 +2100,7 @@
             }
             
             addHeaderFooter();
-            doc.save(`relatorio_periodo_${agentName.split(' ')[0]}_${new Date().toISOString().slice(0,10)}.pdf`);
+            doc.save(`relatorio_periodo_${agentName.replace(/\s/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
         });
 
         mainContent.addEventListener('input', (e) => {
@@ -1977,6 +2113,10 @@
                 } else {
                     target.classList.remove('is-filled');
                 }
+            }
+
+            if (target.closest('#info-dia-section')) {
+                updateInfoDiaStatus();
             }
             
             // Save data first to ensure the latest changes are captured
@@ -2076,7 +2216,7 @@
         modalCancelBtn.addEventListener('click', hideModal);
 
         backupBtn.addEventListener('click', () => {
-            const username = document.getElementById('username').value || 'agente';
+            const username = agenteInput.value || 'agente';
             const dataToBackup = {};
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -2237,7 +2377,7 @@
         sectorModal.addEventListener('submit', (e) => {
             if (e.target.id === 'add-property-form') {
                 e.preventDefault();
-                const username = document.getElementById('username').value;
+                const username = agenteInput.value;
                 const sectorKey = `aceFlowSectorData_${username}`;
                 
                 const newBairro = document.getElementById('new-prop-bairro').value.trim();
@@ -2271,12 +2411,8 @@
                 sectorData.properties[propertyId] = newProp;
                 localStorage.setItem(sectorKey, JSON.stringify(sectorData));
                 
-                const tableBody = document.getElementById('sector-table-body');
-                tableBody.insertAdjacentHTML('beforeend', generatePropertyRowHTML(newProp));
-                e.target.reset();
-                ['#new-prop-bairro', '#new-prop-quarteirao', '#new-prop-logradouro', '#new-prop-numero', '#new-prop-tipo'].forEach(sel => {
-                    document.querySelector(sel).classList.remove('is-filled');
-                });
+                alert('Imóvel cadastrado com sucesso!');
+                renderNeighborhoods(); // Go back to the main view of "Minha Área"
             }
         });
 
@@ -2285,7 +2421,7 @@
                 const propertyId = e.target.dataset.id;
                 const row = e.target.closest('tr');
                 
-                const username = document.getElementById('username').value;
+                const username = agenteInput.value;
                 const sectorKey = `aceFlowSectorData_${username}`;
                 let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
                 
