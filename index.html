@@ -52,7 +52,7 @@
             // --- SERVICE WORKER ---
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    const CACHE_NAME = 'ace-flow-cache-v82'; // Cache version bumped
+                    const CACHE_NAME = 'ace-flow-cache-v83'; // Cache version bumped
                     const PRECACHE_ASSETS = [
                         '.',
                         'https://cdn.tailwindcss.com',
@@ -1296,9 +1296,10 @@
             if (filledCards.length > 0) {
                 const lastCard = filledCards[filledCards.length - 1];
                 const bairro = lastCard.querySelector('.bairro-imovel').value;
+                const quarteirao = lastCard.querySelector('.quarteirao').value;
                 const logradouro = lastCard.querySelector('.logradouro').value;
                 const numero = lastCard.querySelector('.numero').value;
-                const reminderText = `${bairro} - ${logradouro}, ${numero}`;
+                const reminderText = `${bairro} - Quart. ${quarteirao} - ${logradouro}, ${numero}`;
                 localStorage.setItem('aceFlowLastProperty', reminderText);
             }
         };
@@ -2147,6 +2148,20 @@
         
         mainContent.addEventListener('blur', (e) => {
             const target = e.target;
+
+            if (target.matches('.horario')) {
+                const card = target.closest('.visita-card');
+                if (card && card.classList.contains('card-completed')) {
+                    const header = card.querySelector('.card-header');
+                    const content = header.nextElementSibling;
+                    if (header.getAttribute('data-expanded') === 'true') {
+                        header.setAttribute('data-expanded', 'false');
+                        content.classList.remove('show');
+                        saveData();
+                    }
+                }
+            }
+            
             if (target.matches('input[type="text"]') && target.value) {
                 if(target.id === 'estado' && target.value.length === 2) {
                     target.value = target.value.toUpperCase();
