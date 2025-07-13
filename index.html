@@ -52,7 +52,7 @@
             // --- SERVICE WORKER ---
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    const CACHE_NAME = 'ace-flow-cache-v83'; // Cache version bumped
+                    const CACHE_NAME = 'ace-flow-cache-v84'; // Cache version bumped
                     const PRECACHE_ASSETS = [
                         '.',
                         'https://cdn.tailwindcss.com',
@@ -425,17 +425,9 @@
             </div>
 
             <footer class="mt-24 py-12 fade-in-section">
-                <h2 class="text-4xl font-extrabold mb-4">Pronto para Elevar seu Nível?</h2>
-                <div class="flex flex-col md:flex-row justify-center items-center gap-4 mt-8">
-                    <button id="startWebButton" class="btn btn-shine bg-indigo-700 text-white hover:bg-indigo-800 w-full md:w-auto text-xl py-4 px-8 shadow-lg transform hover:scale-105">Vamos lá? Clique aqui agora</button>
-                    <button id="installAppButton" class="btn bg-black text-white hover:bg-gray-800 w-full md:w-auto text-lg hidden">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Instalar no Aparelho (Offline)
-                    </button>
+                 <div class="flex flex-col md:flex-row justify-center items-center gap-4 mt-8">
+                    <button id="startHookButton" class="btn btn-shine bg-indigo-700 text-white hover:bg-indigo-800 w-full md:w-auto text-xl py-4 px-8 shadow-lg transform hover:scale-105">Vamos lá? Clique aqui agora</button>
                 </div>
-                 <p id="install-instructions" class="text-sm text-text-muted mt-4 max-w-2xl mx-auto hidden">
-                    Ao clicar em "Instalar", o app será adicionado à sua tela inicial, como um aplicativo normal, para acesso rápido e funcionamento offline.
-                </p>
             </footer>
         </div>
     </div>
@@ -460,6 +452,21 @@
                 <button type="submit" id="loginBtn" class="btn bg-blue-800 text-white hover:bg-blue-900 w-full text-lg transform hover:scale-105">Entrar</button>
                 <p id="loginError" class="text-red-600 text-center mt-4 h-4"></p>
             </form>
+
+            <div class="mt-8 pt-6 border-t border-dashed border-border-color text-center">
+                <a href="https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=2c93808497bc75650197bd37841c002b" target="_blank" class="btn btn-shine bg-green-600 text-white hover:bg-green-700 w-full text-lg shadow-lg transform hover:scale-105">
+                    ADQUIRA JÁ
+                </a>
+                <p class="text-center text-sm text-text-muted mt-4 mb-4">
+                    Acesse todas as funcionalidades do app, com Suporte via WhatsApp, por um preço simbólico de somente R$ 10,00.
+                </p>
+                <p class="text-xs text-text-muted mt-3 text-center flex items-center justify-center gap-1">
+                    <svg class="w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <span>Pagamento seguro via Mercado Pago. Teste por 7 dias, com seu dinheiro de volta se não gostar. Após a confirmação, entraremos em contato para liberar seu acesso.</span>
+                </p>
+            </div>
+
+            <div id="support-section-login" class="mt-6 pt-4 border-t border-border-color"></div>
         </div>
     </div>
 
@@ -656,6 +663,18 @@
             </details>
         </section>
         
+        <section id="feedback-section" class="card p-4 md:p-6 mb-6">
+            <h2 class="section-title border-b border-border-color pb-3 mb-4">Sua Opinião é Importante!</h2>
+            <p class="text-text-muted mb-4">
+                O ACE FLOW está em constante evolução e sua opinião é fundamental. Tem alguma ideia para uma nova funcionalidade? Uma sugestão para melhorar o que já existe? Compartilhe conosco!
+            </p>
+            <textarea id="feedback-textarea" class="form-input w-full" rows="4" placeholder="Digite aqui suas sugestões, ideias ou críticas..."></textarea>
+            <button id="sendFeedbackBtn" class="btn bg-indigo-600 hover:bg-indigo-700 text-white w-full mt-4">Enviar Feedback</button>
+            <p id="feedback-success-msg" class="text-confirm-green text-center mt-2 hidden">Obrigado! Sua sugestão foi enviada.</p>
+        </section>
+
+        <div id="support-section-main" class="my-8"></div>
+
         <div class="text-center mt-8">
             <button id="backToHomeBtn" class="btn bg-gray-500 hover:bg-gray-600 text-white">Voltar ao Início</button>
         </div>
@@ -764,7 +783,7 @@
 
         // --- SELETORES DO DOM ---
         const landingPage = document.getElementById('landingPage');
-        const startWebButton = document.getElementById('startWebButton');
+        const startHookButton = document.getElementById('startHookButton');
         const installAppButton = document.getElementById('installAppButton');
         const installInstructions = document.getElementById('install-instructions');
         const mainContent = document.querySelector('main');
@@ -848,8 +867,8 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredInstallPrompt = e;
-            installAppButton.classList.remove('hidden');
-            installInstructions.classList.remove('hidden');
+            if(installAppButton) installAppButton.classList.remove('hidden');
+            if(installInstructions) installInstructions.classList.remove('hidden');
         });
 
         const showApp = () => {
@@ -858,18 +877,20 @@
             loginModal.classList.add('flex');
         };
         
-        startWebButton.addEventListener('click', showApp);
+        if(startHookButton) startHookButton.addEventListener('click', showApp);
 
-        installAppButton.addEventListener('click', () => {
-            if (deferredInstallPrompt) {
-                deferredInstallPrompt.prompt();
-                deferredInstallPrompt.userChoice.then((choiceResult) => {
-                    deferredInstallPrompt = null;
-                });
-            } else {
-                showApp();
-            }
-        });
+        if(installAppButton) {
+            installAppButton.addEventListener('click', () => {
+                if (deferredInstallPrompt) {
+                    deferredInstallPrompt.prompt();
+                    deferredInstallPrompt.userChoice.then((choiceResult) => {
+                        deferredInstallPrompt = null;
+                    });
+                } else {
+                    showApp();
+                }
+            });
+        }
 
         // --- FUNÇÕES DE UTILIDADE ---
         const toTitleCase = (str) => {
@@ -1925,23 +1946,6 @@
             doc.save(`Area_de_Trabalho_${agentName.replace(/\s/g, '_')}.pdf`);
         };
 
-        const updateInfoDiaStatus = () => {
-            const requiredFields = infoDiaSection.querySelectorAll('input[required], select[required]');
-            let allFilled = true;
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    allFilled = false;
-                }
-            });
-
-            if (allFilled) {
-                infoDiaSection.classList.add('card-completed');
-            } else {
-                infoDiaSection.classList.remove('card-completed');
-            }
-        };
-
-
         // --- EVENT LISTENERS ---
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -2130,10 +2134,6 @@
                 } else {
                     target.classList.remove('is-filled');
                 }
-            }
-
-            if (target.closest('#info-dia-section')) {
-                updateInfoDiaStatus();
             }
             
             // Save data first to ensure the latest changes are captured
@@ -2328,6 +2328,21 @@
             `;
             modalEl.classList.remove('hidden');
         };
+
+        const createSupportSectionHTML = () => `
+            <h3 class="text-2xl font-bold mb-4 text-center">Dúvidas ou Suporte?</h3>
+            <p class="text-text-muted mb-6 text-center">Entre em contato conosco. Estamos prontos para ajudar!</p>
+            <div class="flex flex-col items-center gap-4">
+                <a href="https://wa.me/5584988559871" target="_blank" class="btn bg-green-500 hover:bg-green-600 text-white w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.003 2.228.656 4.357 1.849 6.037l-1.09 3.972 4.043-1.055z"/></svg>
+                    WhatsApp
+                </a>
+                <a href="mailto:aceflow2025@gmail.com" class="text-sm text-text-muted hover:text-indigo-700">aceflow2025@gmail.com</a>
+            </div>
+        `;
+
+        document.getElementById('support-section-login').innerHTML = createSupportSectionHTML();
+        document.getElementById('support-section-main').innerHTML = createSupportSectionHTML();
 
         document.body.addEventListener('click', (e) => {
             if (e.target.matches('.close-faq-modal')) {
