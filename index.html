@@ -1779,7 +1779,12 @@
             let contentHTML = '<div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sector-view">';
             if (neighborhoods.length > 0) {
                 neighborhoods.forEach(bairro => {
-                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-6 sector-neighborhood-btn" data-bairro="${bairro}">${bairro}</button>`;
+                    contentHTML += `
+                    <div class="relative">
+                        <button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-6 w-full sector-neighborhood-btn" data-bairro="${bairro}">${bairro}</button>
+                        <button class="absolute top-1 right-1 delete-neighborhood-btn bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200" data-bairro="${bairro}">&times;</button>
+                    </div>
+                    `;
                 });
             } else {
                 contentHTML += '<p class="col-span-full text-center text-gray-500">Nenhum bairro cadastrado ainda. Comece a registrar seus imóveis preenchidos.</p>';
@@ -2154,6 +2159,26 @@
                     return;
                 }
                 
+                const deleteNeighborhoodBtn = e.target.closest('.delete-neighborhood-btn');
+                if(deleteNeighborhoodBtn) {
+                    e.stopPropagation();
+                    const bairroToDelete = deleteNeighborhoodBtn.dataset.bairro;
+                    const username = agenteInput.value;
+                    const sectorKey = `aceFlowSectorData_${username}`;
+                    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+                    
+                    Object.keys(sectorData.properties).forEach(propId => {
+                        if(sectorData.properties[propId].bairro === bairroToDelete) {
+                            delete sectorData.properties[propId];
+                        }
+                    });
+                    
+                    localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                    renderNeighborhoods();
+                    showToast(`Bairro "${bairroToDelete}" excluído.`);
+                    return;
+                }
+
                 const deleteBtn = e.target.closest('.delete-property-btn');
                 if (deleteBtn) {
                     const propertyId = deleteBtn.dataset.id;
@@ -2540,7 +2565,7 @@
             <h3 class="text-2xl font-bold mb-4 text-center">Dúvidas ou Suporte?</h3>
             <p class="text-gray-500 mb-6 text-center">Entre em contato conosco. Estamos prontos para ajudar!</p>
             <div class="flex flex-col items-center gap-4">
-                <a href="https://wa.me/5584988559871" target="_blank" class="btn btn-success w-full sm:w-auto">
+                <a href="https://wa.me/5584988559871" target="_blank" class="btn text-white w-full sm:w-auto" style="background-color: #25D366;" onmouseover="this.style.backgroundColor='#1EB155'" onmouseout="this.style.backgroundColor='#25D366'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.003 2.228.656 4.357 1.849 6.037l-1.09 3.972 4.043-1.055z"/></svg>
                     WhatsApp
                 </a>
