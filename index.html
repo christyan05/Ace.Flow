@@ -238,6 +238,26 @@
         .card.card-in-progress {
             border-color: #f97316; /* Orange-500 */
         }
+        
+        /* Toast Notification */
+        #toast-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease, top 0.3s ease;
+            pointer-events: none;
+        }
+        #toast-notification.show {
+            top: 40px;
+            opacity: 1;
+        }
 
     </style>
 </head>
@@ -514,15 +534,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                         <div class="flex items-end gap-2">
                             <div class="flex-grow"><label for="largura" class="text-sm font-medium text-text-muted">Largura</label><input type="number" id="largura" class="form-input mt-1" min="0" step="any"></div>
-                            <select id="larguraUnidade" class="form-select w-20 h-[46px]"><option value="m">m</option><option value="cm">cm</option></select>
+                            <select id="larguraUnidade" class="form-select w-20 h-[49px]"><option value="m">m</option><option value="cm">cm</option></select>
                         </div>
                         <div class="flex items-end gap-2">
                             <div class="flex-grow"><label for="comprimento" class="text-sm font-medium text-text-muted">Comprimento</label><input type="number" id="comprimento" class="form-input mt-1" min="0" step="any"></div>
-                            <select id="comprimentoUnidade" class="form-select w-20 h-[46px]"><option value="m">m</option><option value="cm">cm</option></select>
+                            <select id="comprimentoUnidade" class="form-select w-20 h-[49px]"><option value="m">m</option><option value="cm">cm</option></select>
                         </div>
                         <div class="flex items-end gap-2">
                             <div class="flex-grow"><label for="altura" class="text-sm font-medium text-text-muted">Altura (água)</label><input type="number" id="altura" class="form-input mt-1" min="0" step="any"></div>
-                            <select id="alturaUnidade" class="form-select w-20 h-[46px]"><option value="m">m</option><option value="cm">cm</option></select>
+                            <select id="alturaUnidade" class="form-select w-20 h-[49px]"><option value="m">m</option><option value="cm">cm</option></select>
                         </div>
                     </div>
                     <div class="flex gap-4">
@@ -734,6 +754,7 @@
     </div>
 
     <div id="faqModal" class="fixed inset-0 z-50 modal hidden"></div>
+    <div id="toast-notification"></div>
 
 
     <script>
@@ -837,6 +858,7 @@
         const nextPropertySuggestionContainer = document.getElementById('nextPropertySuggestionContainer');
         const nextPropertySuggestion = document.getElementById('nextPropertySuggestion');
         const infoDiaSection = document.getElementById('info-dia-section');
+        const toastNotification = document.getElementById('toast-notification');
         // Coordinator Mode Selectors
         const coordinatorModeDashboard = document.getElementById('coordinatorModeDashboard');
         const goToCoordinatorModeBtn = document.getElementById('goToCoordinatorModeBtn');
@@ -899,43 +921,51 @@
         const formatAndCorrectText = (str) => {
             return toTitleCase(corrigirOrtografia(str));
         }
+        
+        const showToast = (message) => {
+            toastNotification.textContent = message;
+            toastNotification.classList.add('show');
+            setTimeout(() => {
+                toastNotification.classList.remove('show');
+            }, 3000);
+        };
 
         // --- TEMPLATES HTML ---
         const createVisitaCardHTML = (index) => `
             <div class="card visita-card" data-index="${index}">
                 <header class="flex items-center justify-between p-3 cursor-pointer card-header group" data-toggle="card-content-${index}">
                     <div class="flex items-center min-w-0 flex-1">
-                        <span class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-bg-card border-2 border-khaki-base text-khaki-base font-bold mr-3">${index + 1}</span>
+                        <span class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-gray-600 font-bold mr-3">${index + 1}</span>
                         <div class="min-w-0 flex-grow">
                             <span class="logradouro-preview font-semibold truncate block">Novo Imóvel</span>
-                            <div class="status-indicator text-sm font-semibold text-alert-red">Falta Preencher</div>
+                            <div class="status-indicator text-sm font-semibold text-red-500">Falta Preencher</div>
                         </div>
                     </div>
-                    <span class="toggle-icon text-3xl font-bold text-khaki-base transition-transform duration-300 group-data-[expanded=true]:rotate-45">+</span>
+                    <span class="toggle-icon text-3xl font-bold text-gray-400 transition-transform duration-300 group-data-[expanded=true]:rotate-45">+</span>
                 </header>
                 <div id="card-content-${index}" class="hidden-content">
-                    <div class="p-4 border-t border-border-color space-y-4">
+                    <div class="p-4 border-t border-gray-200 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-sm font-bold text-text-muted">Bairro</label>
+                                <label class="text-sm font-bold text-gray-500">Bairro</label>
                                 <input type="text" list="bairro-suggestions" class="form-input bairro-imovel mt-1" placeholder="Bairro do Imóvel">
                             </div>
                            <div>
-                                <label class="text-sm font-bold text-text-muted">Logradouro/Rua</label>
+                                <label class="text-sm font-bold text-gray-500">Logradouro/Rua</label>
                                 <input type="text" list="street-suggestions" class="form-input logradouro mt-1" placeholder="Ex: Rua João da Silva">
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-x-3">
-                            <div><label class="text-sm font-bold text-text-muted">Quarteirão</label><input type="number" min="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input quarteirao mt-1 text-center"></div>
-                            <div><label class="text-sm font-bold text-text-muted">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
-                            <div><label class="text-sm font-bold text-text-muted">Nº</label><input type="text" inputmode="numeric" class="form-input numero mt-1 text-center is-filled" value="S/N" onfocus="if(this.value === 'S/N') this.value=''" onblur="if(this.value.trim() === '') this.value='S/N'"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input quarteirao mt-1 text-center"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" inputmode="numeric" class="form-input numero mt-1 text-center is-filled" value="S/N" onfocus="if(this.value === 'S/N') this.value=''" onblur="if(this.value.trim() === '') this.value='S/N'"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-x-3">
-                            <div><label class="text-sm font-bold text-text-muted">Imóvel</label><select class="form-select imovel mt-1" required><option value="" disabled selected></option><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
-                            <div><label class="text-sm font-bold text-text-muted">Visita</label><select class="form-select visita mt-1" required><option value="" disabled selected></option><option value="T">Trabalhado</option><option value="P">Recuperado</option><option value="F">Fechado</option><option value="R">Recusado</option></select></div>
+                            <div><label class="text-sm font-bold text-gray-500">Imóvel</label><select class="form-select imovel mt-1" required><option value="" disabled selected></option><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
+                            <div><label class="text-sm font-bold text-gray-500">Visita</label><select class="form-select visita mt-1" required><option value="" disabled selected></option><option value="T">Trabalhado</option><option value="P">Recuperado</option><option value="F">Fechado</option><option value="R">Recusado</option></select></div>
                         </div>
-                        <div class="border-t border-border-color pt-4 mt-4">
-                            <p class="text-center text-sm font-bold text-text-muted mb-2">Resultados</p>
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <p class="text-center text-sm font-bold text-gray-500 mb-2">Resultados</p>
                             <div class="grid grid-cols-3 gap-2">
                                 <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input elim mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Trat.</label><button type="button" class="toggle-check tratado mt-1"></button></div>
@@ -1041,12 +1071,12 @@
             });
 
             cardElement.classList.remove('card-completed', 'card-in-progress');
-            statusIndicator.classList.remove('text-alert-red', 'text-orange-500', 'text-confirm-green');
+            statusIndicator.classList.remove('text-red-500', 'text-orange-500', 'text-green-500');
             const isFullyFilled = filledCount >= requiredSelectors.length;
             
             if (isFullyFilled) {
                 statusIndicator.textContent = '✅ Preenchido';
-                statusIndicator.classList.add('text-confirm-green');
+                statusIndicator.classList.add('text-green-500');
                 cardElement.classList.add('card-completed');
                 if (!horarioInput.value) {
                     const now = new Date();
@@ -1064,7 +1094,7 @@
                 cardElement.classList.add('card-in-progress');
             } else {
                 statusIndicator.textContent = 'Falta Preencher';
-                statusIndicator.classList.add('text-alert-red');
+                statusIndicator.classList.add('text-red-500');
             }
         };
 
@@ -1133,33 +1163,33 @@
             }
 
             summarySection.innerHTML = `
-                <div class="col-span-full text-center border-b border-border-color pb-3 mb-4">
-                    <h3 class="font-semibold text-text-muted">Detalhes dos Imóveis Trabalhados</h3>
+                <div class="col-span-full text-center border-b border-gray-200 pb-3 mb-4">
+                    <h3 class="font-semibold text-gray-500">Detalhes dos Imóveis Trabalhados</h3>
                 </div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.residencia}</p><p class="text-sm text-text-muted">Residências</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.comercio}</p><p class="text-sm text-text-muted">Comércios</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.terrenoBaldio}</p><p class="text-sm text-text-muted">Ter. Baldios</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.outro}</p><p class="text-sm text-text-muted">Outros</p></div>
-                <div class="p-3 text-center col-span-full font-bold text-lg bg-gray-100 rounded-lg summary-item"><p>${trabalhados.total}</p><p class="text-sm font-normal text-text-muted">Total Trabalhados</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.residencia}</p><p class="text-sm text-gray-500">Residências</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.comercio}</p><p class="text-sm text-gray-500">Comércios</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.terrenoBaldio}</p><p class="text-sm text-gray-500">Ter. Baldios</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.outro}</p><p class="text-sm text-gray-500">Outros</p></div>
+                <div class="p-3 text-center col-span-full font-bold text-lg bg-gray-100 rounded-2xl summary-item"><p>${trabalhados.total}</p><p class="text-sm font-normal text-gray-500">Total Trabalhados</p></div>
 
-                <div class="col-span-full text-center border-t border-border-color pt-4 mt-4 pb-3 mb-4">
-                    <h3 class="font-semibold text-text-muted">Resumo Geral da Produção</h3>
+                <div class="col-span-full text-center border-t border-gray-200 pt-4 mt-4 pb-3 mb-4">
+                    <h3 class="font-semibold text-gray-500">Resumo Geral da Produção</h3>
                 </div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.tratamentoFocal}</p><p class="text-sm text-text-muted">Trat. Focal</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.larvicidaGramas.toFixed(1)}g</p><p class="text-sm text-text-muted">Larvicida</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.depositosTratados}</p><p class="text-sm text-text-muted">Dep. Tratados</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.eliminados}</p><p class="text-sm text-text-muted">Eliminados</p></div>
-                <div class="p-3 text-center col-span-full text-red-600 font-bold text-2xl">${geral.focos} <span class="text-sm text-red-600">Total de Focos</span></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.tratamentoFocal}</p><p class="text-sm text-gray-500">Trat. Focal</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.larvicidaGramas.toFixed(1)}g</p><p class="text-sm text-gray-500">Larvicida</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.depositosTratados}</p><p class="text-sm text-gray-500">Dep. Tratados</p></div>
+                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.eliminados}</p><p class="text-sm text-gray-500">Eliminados</p></div>
+                <div class="p-3 text-center col-span-full text-red-500 font-bold text-2xl">${geral.focos} <span class="text-sm">Total de Focos</span></div>
                 
                 <div class="col-span-full flex justify-center flex-wrap gap-4">
-                     <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.recusado}</p><p class="text-sm text-text-muted">Recusados</p></div>
-                     <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.fechado}</p><p class="text-sm text-text-muted">Fechados</p></div>
-                     <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.recuperado}</p><p class="text-sm text-text-muted">Recuperados</p></div>
+                     <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.recusado}</p><p class="text-sm text-gray-500">Recusados</p></div>
+                     <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.fechado}</p><p class="text-sm text-gray-500">Fechados</p></div>
+                     <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.recuperado}</p><p class="text-sm text-gray-500">Recuperados</p></div>
                 </div>
 
                 <div class="col-span-full flex justify-center gap-4">
-                     <div class="p-3 text-center"><p class="font-bold text-2xl">${quarteiroes.trabalhados}</p><p class="text-sm text-text-muted">Quarteirões Trabalhados</p></div>
-                     <div class="p-3 text-center"><p class="font-bold text-2xl">${quarteiroes.concluidos}</p><p class="text-sm text-text-muted">Quarteirões Concluídos</p></div>
+                     <div class="p-3 text-center"><p class="font-bold text-2xl">${quarteiroes.trabalhados}</p><p class="text-sm text-gray-500">Quarteirões Trabalhados</p></div>
+                     <div class="p-3 text-center"><p class="font-bold text-2xl">${quarteiroes.concluidos}</p><p class="text-sm text-gray-500">Quarteirões Concluídos</p></div>
                 </div>
             `;
         };
@@ -1635,7 +1665,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <h3 class="mt-4 text-2xl font-bold text-gray-800">Relatório Pronto!</h3>
-                    <p class="mt-2 text-text-muted">Seu compilado de dados para o período selecionado está pronto. Clique em "Baixar PDF" para salvar o documento.</p>
+                    <p class="mt-2 text-gray-500">Seu compilado de dados para o período selecionado está pronto. Clique em "Baixar PDF" para salvar o documento.</p>
                 </div>
             `;
         };
@@ -1711,7 +1741,7 @@
             let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
 
             const completedVisits = dailyData.visits.filter(v => 
-                v.bairro && v.quarteirao && v.logradouro && v.numero && v.imovel && v.visita && v.lado
+                v.bairro && v.quarteirao && v.logradouro && v.numero && v.imovel && (v.visita === 'T' || v.visita === 'P') && v.lado
             );
 
             for (const visit of completedVisits) {
@@ -1749,10 +1779,10 @@
             let contentHTML = '<div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sector-view">';
             if (neighborhoods.length > 0) {
                 neighborhoods.forEach(bairro => {
-                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-khaki-base text-khaki-base text-lg p-6 sector-neighborhood-btn" data-bairro="${bairro}">${bairro}</button>`;
+                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-6 sector-neighborhood-btn" data-bairro="${bairro}">${bairro}</button>`;
                 });
             } else {
-                contentHTML += '<p class="col-span-full text-center text-text-muted">Nenhum bairro cadastrado ainda. Comece a registrar seus imóveis preenchidos.</p>';
+                contentHTML += '<p class="col-span-full text-center text-gray-500">Nenhum bairro cadastrado ainda. Comece a registrar seus imóveis preenchidos.</p>';
             }
             contentHTML += '</div>';
 
@@ -1784,8 +1814,8 @@
                 sortedBlocks.forEach(block => {
                     contentHTML += `
                         <div class="mb-6">
-                            <h3 class="text-xl font-bold text-khaki-dark border-b-2 border-khaki-light pb-2 mb-3">Quarteirão: ${block}</h3>
-                            <div class="overflow-x-auto bg-white rounded-lg shadow">
+                            <h3 class="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-3">Quarteirão: ${block}</h3>
+                            <div class="overflow-x-auto bg-white rounded-2xl shadow">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
@@ -1807,8 +1837,9 @@
                                 <td class="px-4 py-4 whitespace-nowrap">${prop.numero}</td>
                                 <td class="px-4 py-4 whitespace-nowrap">${prop.lado}</td>
                                 <td class="px-4 py-4 whitespace-nowrap">${imovelMap[prop.tipo] || prop.tipo}</td>
-                                <td class="px-4 py-4 whitespace-nowrap">
-                                    <button class="delete-property-btn text-red-600 hover:text-red-900 text-sm" data-id="${propertyId}">Excluir</button>
+                                <td class="px-4 py-4 whitespace-nowrap flex gap-2">
+                                    <button class="use-property-btn text-green-600 hover:text-green-900 text-sm font-bold" data-id="${propertyId}">Usar</button>
+                                    <button class="delete-property-btn text-red-600 hover:text-red-900 text-sm font-bold" data-id="${propertyId}">Excluir</button>
                                 </td>
                             </tr>
                         `;
@@ -1816,7 +1847,7 @@
                     contentHTML += `</tbody></table></div></div>`;
                 });
             } else {
-                contentHTML += '<p class="text-center text-text-muted">Nenhum imóvel cadastrado para este bairro.</p>';
+                contentHTML += '<p class="text-center text-gray-500">Nenhum imóvel cadastrado para este bairro.</p>';
             }
             contentHTML += '</div>';
 
@@ -1831,19 +1862,19 @@
             sectorModalContent.innerHTML = `
                 <div class="p-4 space-y-4 sector-view">
                     <form id="add-property-form" class="space-y-4">
-                        <div><label class="text-sm font-bold text-text-muted">Bairro</label><input type="text" id="new-prop-bairro" placeholder="Bairro" class="form-input mt-1" required></div>
-                        <div><label class="text-sm font-bold text-text-muted">Quarteirão</label><input type="number" min="1" id="new-prop-quarteirao" placeholder="Quarteirão" class="form-input mt-1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required></div>
-                        <div><label class="text-sm font-bold text-text-muted">Logradouro/Rua</label><input type="text" id="new-prop-logradouro" placeholder="Logradouro" class="form-input mt-1" required></div>
-                        <div><label class="text-sm font-bold text-text-muted">Número</label><input type="number" min="0" id="new-prop-numero" placeholder="Número" class="form-input mt-1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Bairro</label><input type="text" id="new-prop-bairro" placeholder="Bairro" class="form-input mt-1" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" id="new-prop-quarteirao" placeholder="Quarteirão" class="form-input mt-1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Logradouro/Rua</label><input type="text" id="new-prop-logradouro" placeholder="Logradouro" class="form-input mt-1" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Número</label><input type="number" min="0" id="new-prop-numero" placeholder="Número" class="form-input mt-1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required></div>
                         <div>
-                            <label class="text-sm font-bold text-text-muted">Lado</label>
+                            <label class="text-sm font-bold text-gray-500">Lado</label>
                             <select id="new-prop-lado" class="form-select mt-1" required>
                                 <option value="" disabled selected>Selecione o lado</option>
                                 <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-sm font-bold text-text-muted">Tipo de Imóvel</label>
+                            <label class="text-sm font-bold text-gray-500">Tipo de Imóvel</label>
                             <select id="new-prop-tipo" class="form-select mt-1" required>
                                 <option value="" disabled selected>Selecione o tipo</option>
                                 <option value="R">Residência</option>
@@ -1852,7 +1883,7 @@
                                 <option value="O">Outro</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn bg-green-700 text-white w-full">Salvar Imóvel</button>
+                        <button type="submit" class="btn btn-success w-full">Salvar Imóvel</button>
                     </form>
                 </div>
             `;
@@ -1913,6 +1944,48 @@
             } else {
                 sectorModal.classList.add('hidden');
                 sectorModal.classList.remove('flex');
+            }
+        };
+
+        const handleUseProperty = (propertyId) => {
+            const username = agenteInput.value;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            const propToUse = Object.values(sectorData.properties).find(p => {
+                const pId = `${p.bairro}-${p.quarteirao}-${p.logradouro}-${p.numero}-${p.tipo}-${p.lado}`.toLowerCase().replace(/\s+/g, '-');
+                return pId === propertyId;
+            });
+
+            if (!propToUse) return;
+
+            const availableCard = [...document.querySelectorAll('.visita-card')].find(card => !card.classList.contains('card-completed'));
+            
+            if (availableCard) {
+                availableCard.querySelector('.bairro-imovel').value = propToUse.bairro;
+                availableCard.querySelector('.logradouro').value = propToUse.logradouro;
+                availableCard.querySelector('.quarteirao').value = propToUse.quarteirao;
+                availableCard.querySelector('.lado').value = propToUse.lado;
+                availableCard.querySelector('.numero').value = propToUse.numero;
+                availableCard.querySelector('.imovel').value = propToUse.tipo;
+
+                // Mark as manually input to trigger status update
+                [...availableCard.querySelectorAll('.bairro-imovel, .logradouro, .quarteirao, .lado, .numero, .imovel')].forEach(el => {
+                    el.dataset.manualInput = 'true';
+                    el.classList.add('is-filled');
+                });
+                
+                updateCardStatus(availableCard);
+                saveData();
+                closeSectorModalBtn.click();
+                showToast("Imóvel preenchido no registro diário!");
+                availableCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const header = availableCard.querySelector('.card-header');
+                if(header.getAttribute('data-expanded') !== 'true') {
+                    header.click();
+                }
+                availableCard.querySelector('.visita').focus();
+            } else {
+                alert("Todos os imóveis visíveis já estão preenchidos. Adicione um novo para usar esta função.");
             }
         };
 
@@ -2084,20 +2157,24 @@
                 const deleteBtn = e.target.closest('.delete-property-btn');
                 if (deleteBtn) {
                     const propertyId = deleteBtn.dataset.id;
-                    showModal("Tem certeza que deseja excluir este imóvel da sua área?", () => {
-                        const username = agenteInput.value;
-                        const sectorKey = `aceFlowSectorData_${username}`;
-                        let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
-                        delete sectorData.properties[propertyId];
-                        localStorage.setItem(sectorKey, JSON.stringify(sectorData));
-                        
-                        // Refresh the current view
-                        const currentTitle = sectorModalTitle.textContent;
-                        const bairroMatch = currentTitle.match(/Bairro: (.*)/);
-                        if (bairroMatch) {
-                            renderBlocksAndProperties(bairroMatch[1]);
-                        }
-                    });
+                    const username = agenteInput.value;
+                    const sectorKey = `aceFlowSectorData_${username}`;
+                    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+                    delete sectorData.properties[propertyId];
+                    localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                    
+                    const currentTitle = sectorModalTitle.textContent;
+                    const bairroMatch = currentTitle.match(/Bairro: (.*)/);
+                    if (bairroMatch) {
+                        renderBlocksAndProperties(bairroMatch[1]);
+                    }
+                    return;
+                }
+
+                const useBtn = e.target.closest('.use-property-btn');
+                if (useBtn) {
+                    const propertyId = useBtn.dataset.id;
+                    handleUseProperty(propertyId);
                 }
             });
         }
@@ -2447,7 +2524,7 @@
                     </header>
                     <div class="flex-grow overflow-y-auto">
                         <div class="p-6">
-                            <p class="mb-6 text-text-muted">${intro}</p>
+                            <p class="mb-6 text-gray-500">${intro}</p>
                         </div>
                         <div class="bg-white rounded-lg shadow-inner">
                            ${qnaHTML}
@@ -2461,13 +2538,13 @@
 
         const createSupportSectionHTML = () => `
             <h3 class="text-2xl font-bold mb-4 text-center">Dúvidas ou Suporte?</h3>
-            <p class="text-text-muted mb-6 text-center">Entre em contato conosco. Estamos prontos para ajudar!</p>
+            <p class="text-gray-500 mb-6 text-center">Entre em contato conosco. Estamos prontos para ajudar!</p>
             <div class="flex flex-col items-center gap-4">
-                <a href="https://wa.me/5584988559871" target="_blank" class="btn bg-green-500 hover:bg-green-600 text-white w-full sm:w-auto">
+                <a href="https://wa.me/5584988559871" target="_blank" class="btn btn-success w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.003 2.228.656 4.357 1.849 6.037l-1.09 3.972 4.043-1.055z"/></svg>
                     WhatsApp
                 </a>
-                <button id="copyEmailBtn" data-email="aceflow2025@gmail.com" class="inline-flex items-center gap-2 text-sm text-text-muted hover:text-khaki-dark bg-white py-2 px-4 rounded-full border-2 border-gray-200 hover:border-khaki-base transition-all shadow-sm">
+                <button id="copyEmailBtn" data-email="aceflow2025@gmail.com" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 bg-white py-2 px-4 rounded-full border-2 border-gray-200 hover:border-blue-300 transition-all shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                     <span class="email-text">aceflow2025@gmail.com</span>
                 </button>
@@ -2499,7 +2576,7 @@
                     }, 2000);
                 } catch (err) {
                     console.error('Falha ao copiar o e-mail: ', err);
-                    alert('Não foi possível copiar o e-mail. Por favor, copie manualmente.');
+                    alert('Não foi possível copiar o e-mail. Por favor, copie manually.');
                 }
                 document.body.removeChild(textarea);
             }
