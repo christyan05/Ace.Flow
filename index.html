@@ -1197,8 +1197,12 @@
                     const selector = key === 'bairro' ? '.bairro-imovel' : `.${key}`;
                     const el = card.querySelector(selector);
                     if (el) {
-                        if (el.classList.contains('toggle-check')) { if(visitData[key]) el.classList.add('is-checked');}
-                        else { el.value = visitData[key]; }
+                        if (el.classList.contains('toggle-check')) {
+                            // CORRECTION: Use toggle with the boolean value to ensure state is set correctly.
+                            el.classList.toggle('is-checked', !!visitData[key]);
+                        } else { 
+                            el.value = visitData[key]; 
+                        }
                         if (el.value && el.value !== 'S/N') el.classList.add('is-filled');
                     }
                 });
@@ -1534,7 +1538,7 @@
 
         // --- My Area (Minha Área) Functions ---
         const displayMyArea = () => {
-            sectorNavigationStack = [];
+            sectorNavigationStack = [{ view: 'neighborhoods' }];
             renderNeighborhoods();
             sectorModal.classList.remove('hidden');
             sectorModal.classList.add('flex');
@@ -1568,40 +1572,19 @@
             document.getElementById('addPropertyManualBtn').addEventListener('click', () => showPropertyForm());
             document.getElementById('exportAreaPdfBtn').addEventListener('click', exportAreaToPdf);
         };
-        
-        const renderBlocksAndProperties = (bairro) => {
-            sectorNavigationStack.push({ view: 'neighborhoods' });
-            const properties = getAreaProperties().filter(p => p.bairro === bairro);
-            const totalPropertiesInBairro = properties.length;
-            const groupedByBlock = properties.reduce((acc, prop) => { (acc[prop.quarteirao] = acc[prop.quarteirao] || []).push(prop); return acc; }, {});
-            let contentHTML = '<div class="space-y-4 sector-view">';
-            const sortedBlocks = Object.keys(groupedByBlock).sort((a, b) => parseInt(a) - parseInt(b));
 
-            if (sortedBlocks.length > 0) {
-                sortedBlocks.forEach(block => {
-                    const blockProperties = groupedByBlock[block];
-                    const propertyCount = blockProperties.length;
-                    contentHTML += `<div class="mb-4"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-3 flex justify-between items-baseline"><span>Quarteirão: ${block}</span><span class="text-base font-normal text-gray-500">${propertyCount} imóveis</span></h3><div class="overflow-x-auto bg-white rounded-lg shadow-md"><table class="min-w-full divide-y divide-gray-200">`;
-                    const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
-                    groupedByBlock[block].sort((a,b) => a.logradouro.localeCompare(b.logradouro) || a.numero - b.numero).forEach(prop => {
-                        contentHTML += `<tr data-id="${prop.id}">
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${prop.logradouro}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">${prop.numero}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">${prop.lado}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${imovelMap[prop.tipo] || prop.tipo}</td>
-                            <td class="px-4 py-3 whitespace-nowrap flex gap-2 justify-end">
-                                <button class="use-property-btn btn p-2 h-9 w-9 bg-green-600 text-white" title="Usar este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
-                                <button class="edit-property-btn btn p-2 h-9 w-9 bg-yellow-500 text-white" title="Editar este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
-                                <button class="delete-property-btn btn p-2 h-9 w-9 bg-red-600 text-white" title="Excluir este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                            </td></tr>`;
-                    });
-                    contentHTML += `</table></div></div>`;
+        const renderBlocks = (bairro) => {
+            sectorNavigationStack.push({ view: 'blocks', bairro: bairro });
+            const properties = getAreaProperties().filter(p => p.bairro === bairro);
+            const blocks = [...new Set(properties.map(p => p.quarteirao))].sort((a, b) => parseInt(a) - parseInt(b));
+
+            let contentHTML = '<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 p-4">';
+            if (blocks.length > 0) {
+                blocks.forEach(block => {
+                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-4 w-full aspect-square flex items-center justify-center sector-block-btn" data-bairro="${bairro}" data-quarteirao="${block}">${block}</button>`;
                 });
-                contentHTML += `<div class="mt-6 p-4 bg-khaki-base rounded-lg text-center text-white shadow-lg">
-                                    <p class="text-lg font-bold">Total de Imóveis no Bairro: ${totalPropertiesInBairro}</p>
-                                </div>`;
             } else {
-                contentHTML += '<p class="text-center text-gray-500 py-8">Nenhum imóvel cadastrado para este bairro.</p>';
+                contentHTML += '<p class="col-span-full text-center text-gray-500 py-8">Nenhum quarteirão cadastrado para este bairro.</p>';
             }
             contentHTML += '</div>';
 
@@ -1611,9 +1594,64 @@
             sectorModalFooter.innerHTML = '';
         };
 
+        const renderPropertiesForBlock = (bairro, quarteirao) => {
+            sectorNavigationStack.push({ view: 'properties', bairro: bairro, quarteirao: quarteirao });
+            const properties = getAreaProperties().filter(p => p.bairro === bairro && p.quarteirao === quarteirao);
+            
+            properties.sort((a,b) => {
+                const logradouroComp = a.logradouro.localeCompare(b.logradouro);
+                if (logradouroComp !== 0) return logradouroComp;
+                const numA = parseInt(a.numero.replace(/\D/g,''), 10) || 0;
+                const numB = parseInt(b.numero.replace(/\D/g,''), 10) || 0;
+                if (numA !== numB) return numA - numB;
+                return a.numero.localeCompare(b.numero);
+            });
+
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
+            let contentHTML = `<div class="overflow-x-auto bg-white rounded-lg"><table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100 sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Rua</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">N°</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Lado</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tipo</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">`;
+
+            if (properties.length > 0) {
+                properties.forEach((prop, index) => {
+                    contentHTML += `<tr data-id="${prop.id}">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 font-medium">${index + 1}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${prop.logradouro}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${prop.numero}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${prop.lado}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${imovelMap[prop.tipo] || prop.tipo}</td>
+                        <td class="px-4 py-3 whitespace-nowrap flex gap-1">
+                            <button class="use-property-btn btn p-2 h-8 w-8 bg-green-600 text-white" title="Usar este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+                            <button class="edit-property-btn btn p-2 h-8 w-8 bg-yellow-500 text-white" title="Editar este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+                            <button class="delete-property-btn btn p-2 h-8 w-8 bg-red-600 text-white" title="Excluir este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </td>
+                    </tr>`;
+                });
+            } else {
+                contentHTML += '<tr><td colspan="6" class="text-center text-gray-500 py-8">Nenhum imóvel cadastrado para este quarteirão.</td></tr>';
+            }
+            contentHTML += '</tbody></table></div>';
+
+            sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${quarteirao}`;
+            sectorModalContent.innerHTML = contentHTML;
+            sectorBackBtn.classList.remove('hidden');
+            sectorModalFooter.innerHTML = '';
+        };
+
         const showPropertyForm = (property = null) => {
             const isEditing = property !== null;
-            sectorNavigationStack.push({ view: 'blocks', bairro: property?.bairro });
+            const currentView = sectorNavigationStack[sectorNavigationStack.length - 1];
+            sectorNavigationStack.push({ view: 'form', from: currentView });
+            
             sectorModalTitle.textContent = isEditing ? "Editar Imóvel" : "Cadastrar Novo Imóvel";
             sectorModalContent.innerHTML = `
                 <div class="p-4 space-y-4 sector-view">
@@ -1683,10 +1721,18 @@
         };
 
         const handleSectorBack = () => {
-            const lastView = sectorNavigationStack.pop();
+            sectorNavigationStack.pop(); // Remove current view
+            const lastView = sectorNavigationStack[sectorNavigationStack.length - 1];
             if (lastView) {
-                if (lastView.view === 'neighborhoods') renderNeighborhoods();
-                else if (lastView.view === 'blocks' && lastView.bairro) renderBlocksAndProperties(lastView.bairro);
+                if (lastView.view === 'neighborhoods') {
+                    renderNeighborhoods();
+                } else if (lastView.view === 'blocks') {
+                    renderBlocks(lastView.bairro);
+                } else if (lastView.view === 'properties') {
+                    renderPropertiesForBlock(lastView.bairro, lastView.quarteirao);
+                } else {
+                    renderNeighborhoods(); // Fallback to the main view
+                }
             } else {
                 closeSectorModalBtn.click();
             }
@@ -1895,7 +1941,10 @@
         if (sectorModalContent) {
             sectorModalContent.addEventListener('click', (e) => {
                 const neighborhoodBtn = e.target.closest('.sector-neighborhood-btn');
-                if (neighborhoodBtn) { renderBlocksAndProperties(neighborhoodBtn.dataset.bairro); return; }
+                if (neighborhoodBtn) { renderBlocks(neighborhoodBtn.dataset.bairro); return; }
+
+                const blockBtn = e.target.closest('.sector-block-btn');
+                if (blockBtn) { renderPropertiesForBlock(blockBtn.dataset.bairro, blockBtn.dataset.quarteirao); return; }
                 
                 const editBtn = e.target.closest('.edit-property-btn');
                 if (editBtn) {
@@ -1906,16 +1955,19 @@
 
                 const deleteBtn = e.target.closest('.delete-property-btn');
                 if (deleteBtn) {
-                    // Exclusão imediata sem confirmação
-                    const propertyId = deleteBtn.dataset.id;
-                    const username = agenteInput.value;
-                    const sectorKey = `aceFlowSectorData_${username}`;
-                    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
-                    delete sectorData.properties[propertyId];
-                    localStorage.setItem(sectorKey, JSON.stringify(sectorData));
-                    const currentTitle = sectorModalTitle.textContent;
-                    const bairroMatch = currentTitle.match(/Bairro: (.*)/);
-                    if (bairroMatch) renderBlocksAndProperties(bairroMatch[1]);
+                    showModal("Tem certeza que deseja excluir este imóvel da sua área?", () => {
+                        const propertyId = deleteBtn.dataset.id;
+                        const username = agenteInput.value;
+                        const sectorKey = `aceFlowSectorData_${username}`;
+                        let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+                        const propToDelete = sectorData.properties[propertyId];
+                        if (propToDelete) {
+                            delete sectorData.properties[propertyId];
+                            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                            showToast("Imóvel excluído.");
+                            renderPropertiesForBlock(propToDelete.bairro, propToDelete.quarteirao);
+                        }
+                    });
                     return;
                 }
 
