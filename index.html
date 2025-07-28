@@ -671,15 +671,15 @@
     
     <div id="sectorModal" class="fixed inset-0 z-50 modal hidden">
         <div class="card p-0 w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
-            <header class="flex justify-between items-center border-b p-4">
-                <button id="sectorBackBtn" class="sector-back-btn hidden">
+            <header class="flex justify-between items-center border-b p-4 sticky top-0 bg-white/90 backdrop-blur-sm z-10">
+                <button id="sectorBackBtn" class="sector-back-btn p-2 rounded-full hover:bg-gray-200 hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
                 </button>
                 <h2 id="sectorModalTitle" class="section-title flex-grow text-center">Minha Área de Atuação</h2>
-                <button id="closeSectorModalBtn" class="text-3xl font-bold">&times;</button>
+                <button id="closeSectorModalBtn" class="text-3xl font-bold p-2">&times;</button>
             </header>
-            <div id="sectorModalContent" class="flex-grow overflow-y-auto relative p-4 bg-gray-50"></div>
-            <footer id="sectorModalFooter" class="p-4 border-t bg-white"></footer>
+            <div id="sectorModalContent" class="flex-grow overflow-y-auto relative bg-gray-50"></div>
+            <footer id="sectorModalFooter" class="p-4 border-t bg-white sticky bottom-0"></footer>
         </div>
     </div>
 
@@ -711,6 +711,7 @@
         let performanceChartInstance = null;
         let fociDistributionChartInstance = null;
         let coordinatorReportData = null; // Store data for coordinator PDF export
+        let debounceTimer;
 
         // --- DOM SELECTORS ---
         const landingPage = document.getElementById('landingPage');
@@ -828,7 +829,7 @@
             return correctedStr;
         };
         
-        const formatAndCorrectText = (str) => toTitleCase(corrigirOrtografia(str));
+        const formatAndCorrectText = (str) => toTitleCase(corrigirOrtografia(str.trim()));
         
         const showToast = (message) => {
             toastNotification.textContent = message;
@@ -875,7 +876,7 @@
                         <div class="grid grid-cols-3 gap-x-3">
                             <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input quarteirao mt-1 text-center"></div>
                             <div><label class="text-sm font-bold text-gray-500">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
-                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" inputmode="numeric" class="form-input numero mt-1 text-center is-filled" value="S/N" onfocus="if(this.value === 'S/N') this.value=''" onblur="if(this.value.trim() === '') this.value='S/N'"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" inputmode="text" class="form-input numero mt-1 text-center is-filled" value="S/N" onfocus="if(this.value === 'S/N') this.value=''" onblur="if(this.value.trim() === '') this.value='S/N'"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-x-3">
                             <div><label class="text-sm font-bold text-gray-500">Imóvel</label><select class="form-select imovel mt-1" required><option value="" disabled selected></option><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
@@ -995,8 +996,12 @@
                     horarioInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                     horarioInput.classList.add('is-filled');
                 }
-                saveCurrentDayToHistory(false);
-                displayNextPropertySuggestion();
+                // Debounced save to avoid excessive writes
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    saveCurrentDayToHistory(false);
+                    displayNextPropertySuggestion();
+                }, 1000);
             } else if (hasManualInput) {
                 statusIndicator.textContent = 'Em Preenchimento...';
                 statusIndicator.classList.add('text-orange-500'); 
@@ -1014,13 +1019,18 @@
             let summary = { recuperado: 0, fechado: 0, recusado: 0, eliminados: 0, depositosTratados: 0, tratamentoFocal: 0, larvicidaGramas: 0, focos: 0 };
             let trabalhadosSummary = { total: 0, residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0 };
             const quarteiroesSet = new Set();
+            const completedBlocks = getCompletedBlocks();
 
             filledCards.forEach(card => {
                 const imovel = card.querySelector('.imovel').value;
                 const visita = card.querySelector('.visita').value;
                 const quarteiraoValue = card.querySelector('.quarteirao').value.trim();
+                const bairroValue = card.querySelector('.bairro-imovel').value.trim();
+                const blockId = `${bairroValue}-${quarteiraoValue}`;
 
-                if (quarteiraoValue && !isNaN(parseInt(quarteiraoValue))) quarteiroesSet.add(parseInt(quarteiraoValue));
+                if (quarteiraoValue && !isNaN(parseInt(quarteiraoValue))) {
+                    quarteiroesSet.add(blockId);
+                }
                 
                 if (visita === 'T' || visita === 'P') { 
                     trabalhadosSummary.total++;
@@ -1041,14 +1051,14 @@
                 if (card.querySelector('.foco').classList.contains('is-checked')) summary.focos++;
             });
 
-            const quarteiroesTrabalhados = quarteiroesSet.size;
-            let quarteiroesConcluidos = 0;
-            if (quarteiroesSet.size > 1) {
-                const maxQuarteirao = Math.max(...quarteiroesSet);
-                quarteiroesConcluidos = [...quarteiroesSet].filter(q => q < maxQuarteirao).length;
-            }
-            
-            return { trabalhados: trabalhadosSummary, geral: summary, quarteiroes: { trabalhados: quarteiroesTrabalhados, concluidos: quarteiroesConcluidos } };
+            return { 
+                trabalhados: trabalhadosSummary, 
+                geral: summary, 
+                quarteiroes: { 
+                    trabalhados: quarteiroesSet.size, 
+                    concluidos: Object.keys(completedBlocks).length 
+                } 
+            };
         };
 
         const renderSummary = (summaryData) => {
@@ -1198,10 +1208,9 @@
                     const el = card.querySelector(selector);
                     if (el) {
                         if (el.classList.contains('toggle-check')) {
-                            // CORRECTION: Use toggle with the boolean value to ensure state is set correctly.
                             el.classList.toggle('is-checked', !!visitData[key]);
                         } else { 
-                            el.value = visitData[key]; 
+                            el.value = visitData[key] || ''; 
                         }
                         if (el.value && el.value !== 'S/N') el.classList.add('is-filled');
                     }
@@ -1253,23 +1262,27 @@
                 if (quarteiraoComp !== 0) return quarteiraoComp;
                 const logradouroComp = a.logradouro.localeCompare(b.logradouro);
                 if (logradouroComp !== 0) return logradouroComp;
-                return parseInt(a.numero) - parseInt(b.numero);
+                const numA = parseInt(a.numero.replace(/\D/g,''), 10) || Infinity;
+                const numB = parseInt(b.numero.replace(/\D/g,''), 10) || Infinity;
+                if (numA !== numB) return numA - numB;
+                return a.numero.localeCompare(b.numero, undefined, {numeric: true});
             });
         };
 
         const checkCycleCompletion = () => {
             const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
-            if (history.length < 2) return false;
+            if (history.length < 2) return false; // Need at least two days of history to compare
             const propertyVisits = {};
             history.forEach(day => {
                 day.visits.forEach(visit => {
                     if (visit.logradouro && visit.quarteirao) {
-                        const propId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}-${visit.tipo}-${visit.lado}`;
+                        const propId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}`.toLowerCase();
                         if (!propertyVisits[propId]) propertyVisits[propId] = new Set();
                         propertyVisits[propId].add(day.header.data);
                     }
                 });
             });
+            // If any property has been visited on more than one date, a new cycle has started
             for (const propId in propertyVisits) {
                 if (propertyVisits[propId].size > 1) return true;
             }
@@ -1277,38 +1290,53 @@
         };
 
         const displayNextPropertySuggestion = () => {
+            // Only show suggestions if a full cycle has been completed
             if (!checkCycleCompletion()) {
                 nextPropertySuggestionContainer.classList.add('hidden');
                 return;
             }
+
             const allAreaProperties = getAreaProperties();
             if (allAreaProperties.length === 0) {
                 nextPropertySuggestionContainer.classList.add('hidden');
                 return;
             }
+
             const filledCards = [...document.querySelectorAll('.visita-card.card-completed')];
             if (filledCards.length === 0) {
-                nextPropertySuggestionContainer.classList.add('hidden');
+                // If no cards filled today, suggest the first property of the area
+                const nextProp = allAreaProperties[0];
+                const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
+                const suggestionText = `${nextProp.bairro}, Q:${nextProp.quarteirao}, ${nextProp.logradouro}, Nº${nextProp.numero}, ${imovelMap[nextProp.tipo] || ''}`;
+                nextPropertySuggestion.textContent = suggestionText;
+                nextPropertySuggestionContainer.classList.remove('hidden');
                 return;
             }
+
             const lastCard = filledCards[filledCards.length - 1];
             const lastVisit = {
-                bairro: lastCard.querySelector('.bairro-imovel').value, quarteirao: lastCard.querySelector('.quarteirao').value,
-                logradouro: lastCard.querySelector('.logradouro').value, numero: lastCard.querySelector('.numero').value,
-                tipo: lastCard.querySelector('.imovel').value, lado: lastCard.querySelector('.lado').value
+                bairro: lastCard.querySelector('.bairro-imovel').value,
+                quarteirao: lastCard.querySelector('.quarteirao').value,
+                logradouro: lastCard.querySelector('.logradouro').value,
+                numero: lastCard.querySelector('.numero').value
             };
-            const lastPropertyId = `${lastVisit.bairro}-${lastVisit.quarteirao}-${lastVisit.logradouro}-${lastVisit.numero}-${lastVisit.tipo}-${lastVisit.lado}`.toLowerCase().replace(/\s+/g, '-');
+
+            const lastPropertyId = `${lastVisit.bairro}-${lastVisit.quarteirao}-${lastVisit.logradouro}-${lastVisit.numero}`.toLowerCase();
             const lastIndex = allAreaProperties.findIndex(p => {
-                const pId = `${p.bairro}-${p.quarteirao}-${p.logradouro}-${p.numero}-${p.tipo}-${p.lado}`.toLowerCase().replace(/\s+/g, '-');
+                const pId = `${p.bairro}-${p.quarteirao}-${p.logradouro}-${p.numero}`.toLowerCase();
                 return pId === lastPropertyId;
             });
-            let nextIndex = (lastIndex !== -1) ? lastIndex + 1 : 0;
-            if (nextIndex >= allAreaProperties.length) nextIndex = 0;
-            const nextProp = allAreaProperties[nextIndex];
-            const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
-            const suggestionText = `${nextProp.bairro}, Q:${nextProp.quarteirao}, ${nextProp.logradouro}, Nº${nextProp.numero}, ${imovelMap[nextProp.tipo] || ''}`;
-            nextPropertySuggestion.textContent = suggestionText;
-            nextPropertySuggestionContainer.classList.remove('hidden');
+
+            if (lastIndex !== -1 && lastIndex + 1 < allAreaProperties.length) {
+                const nextProp = allAreaProperties[lastIndex + 1];
+                const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
+                const suggestionText = `${nextProp.bairro}, Q:${nextProp.quarteirao}, ${nextProp.logradouro}, Nº${nextProp.numero}, ${imovelMap[nextProp.tipo] || ''}`;
+                nextPropertySuggestion.textContent = suggestionText;
+                nextPropertySuggestionContainer.classList.remove('hidden');
+            } else {
+                // Reached end of list or property not found, hide suggestion
+                nextPropertySuggestionContainer.classList.add('hidden');
+            }
         };
 
         const saveCurrentDayToHistory = (showSuccessAlert = true) => {
@@ -1332,18 +1360,45 @@
         };
         
         const getStandardPdfStyles = (options = {}) => ({
-            styles: { fontSize: 16, cellPadding: 3, ...options.styles },
-            headStyles: { fillColor: '#111827', textColor: '#FFFFFF', fontSize: 16, fontStyle: 'bold', ...options.headStyles },
+            styles: { fontSize: 10, cellPadding: 2, ...options.styles },
+            headStyles: { fillColor: '#111827', textColor: '#FFFFFF', fontSize: 10, fontStyle: 'bold', ...options.headStyles },
             bodyStyles: { textColor: '#374151', ...options.bodyStyles },
             alternateRowStyles: { fillColor: '#F3F4F6' },
             margin: { left: 10, right: 10, top: 15, bottom: 15 },
         });
 
+        const generatePdf = (title, headerData, tables, filename) => {
+            const doc = new jsPDF();
+            
+            doc.setFontSize(16);
+            doc.text(title, 105, 17, { align: 'center' });
+
+            doc.autoTable({
+                startY: 25,
+                theme: 'plain',
+                body: headerData,
+                styles: { fontSize: 12 }
+            });
+            
+            tables.forEach(table => {
+                const finalY = doc.lastAutoTable.finalY || 25;
+                doc.autoTable({
+                    startY: finalY + table.spacing,
+                    head: table.head,
+                    body: table.body,
+                    ...getStandardPdfStyles({styles: {fontSize: 10}, headStyles: {fontSize: 10}}),
+                    willDrawCell: table.willDrawCell,
+                    columnStyles: table.columnStyles
+                });
+            });
+
+            doc.save(filename);
+        };
+
         const generateDailyPDF = () => {
             saveLastPropertyReminder();
             if (!saveCurrentDayToHistory(true)) return;
 
-            const doc = new jsPDF();
             const data = JSON.parse(localStorage.getItem('aceFlowDailyData'));
             if (!data) return;
 
@@ -1353,21 +1408,13 @@
             const { agente, bairro, ciclo, data: workDate, cidade, estado } = data.header;
             const dateFormatted = new Date(workDate + 'T12:00:00').toLocaleDateString('pt-BR');
             
-            doc.setFontSize(22);
-            doc.text("Relatório de Atividades Diárias", 105, 17, { align: 'center' });
-
-            doc.autoTable({
-                startY: 25,
-                theme: 'plain',
-                body: [
-                    [{content: 'Agente:', styles: {fontStyle: 'bold'}}, agente],
-                    [{content: 'Data:', styles: {fontStyle: 'bold'}}, dateFormatted],
-                    [{content: 'Cidade/UF:', styles: {fontStyle: 'bold'}}, `${cidade} / ${estado}`],
-                    [{content: 'Bairro Principal:', styles: {fontStyle: 'bold'}}, bairro],
-                    [{content: 'Ciclo:', styles: {fontStyle: 'bold'}}, ciclo]
-                ],
-                styles: { fontSize: 16 }
-            });
+            const headerInfo = [
+                [{content: 'Agente:', styles: {fontStyle: 'bold'}}, agente],
+                [{content: 'Data:', styles: {fontStyle: 'bold'}}, dateFormatted],
+                [{content: 'Cidade/UF:', styles: {fontStyle: 'bold'}}, `${cidade} / ${estado}`],
+                [{content: 'Bairro Principal:', styles: {fontStyle: 'bold'}}, bairro],
+                [{content: 'Ciclo:', styles: {fontStyle: 'bold'}}, ciclo]
+            ];
             
             const summaryData = getSummaryData();
             const { trabalhados, geral, quarteiroes } = summaryData;
@@ -1377,12 +1424,6 @@
                 ['Ter. Baldios', trabalhados.terrenoBaldio], ['Outros', trabalhados.outro],
                 [{content: 'Total Trabalhados', styles: {fontStyle: 'bold'}}, {content: trabalhados.total, styles: {fontStyle: 'bold'}}]
             ];
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 8,
-                head: [['Detalhes dos Imóveis Trabalhados', 'Total']],
-                body: detalhesData,
-                ...getStandardPdfStyles()
-            });
 
             const producaoData = [
                 ['Tratamento Focal', geral.tratamentoFocal], ['Larvicida', `${geral.larvicidaGramas.toFixed(1)}g`],
@@ -1391,42 +1432,27 @@
                 ['Total de Focos', geral.focos], ['Recusados', geral.recusado],
                 ['Fechados', geral.fechado], ['Recuperados', geral.recuperado]
             ];
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 5,
-                head: [['Resumo Geral da Produção', 'Total']],
-                body: producaoData,
-                ...getStandardPdfStyles(),
-                willDrawCell: function(data) {
-                    if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
-                        data.cell.styles.textColor = '#e74c3c'; data.cell.styles.fontStyle = 'bold';
-                        if (data.row.cells[1]) { data.row.cells[1].styles.textColor = '#e74c3c'; data.row.cells[1].styles.fontStyle = 'bold'; }
-                    }
-                },
-            });
-            
+
             const visitaMap = { T: 'Trab.', P: 'Recup.', F: 'Fechado', R: 'Recusa' };
             const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
             const visitData = filledVisits.map((v, i) => [
                 i + 1, v.bairro, v.logradouro, v.quarteirao, v.numero, imovelMap[v.imovel] || v.imovel, v.lado, visitaMap[v.visita] || v.visita, v.horario || ''
             ]);
-            doc.autoTable({
-                head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], 
-                body: visitData,
-                startY: doc.lastAutoTable.finalY + 10,
-                ...getStandardPdfStyles({ styles: { fontSize: 12 }, headStyles: { fontSize: 12 } }),
-                columnStyles: {
-                    0: { cellWidth: 8 }, 
-                    1: { cellWidth: 30 },
-                    3: { cellWidth: 12 }, 
-                    4: { cellWidth: 12 }, 
-                    5: { cellWidth: 15 }, 
-                    6: { cellWidth: 12 }, 
-                    7: { cellWidth: 18 }, 
-                    8: { cellWidth: 18 }  
-                }
-            });
             
-            doc.save(`ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
+            const tables = [
+                { spacing: 8, head: [['Detalhes dos Imóveis Trabalhados', 'Total']], body: detalhesData },
+                { spacing: 5, head: [['Resumo Geral da Produção', 'Total']], body: producaoData, willDrawCell: (data) => {
+                    if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
+                        data.cell.styles.textColor = '#e74c3c'; data.cell.styles.fontStyle = 'bold';
+                        if (data.row.cells[1]) { data.row.cells[1].styles.textColor = '#e74c3c'; data.row.cells[1].styles.fontStyle = 'bold'; }
+                    }
+                }},
+                { spacing: 10, head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], body: visitData, columnStyles: {
+                    0: { cellWidth: 8 }, 1: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 }, 5: { cellWidth: 15 }, 6: { cellWidth: 12 }, 7: { cellWidth: 18 }, 8: { cellWidth: 18 }
+                }}
+            ];
+            
+            generatePdf("Relatório de Atividades Diárias", headerInfo, tables, `ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
         };
         
         const updateAutocomplete = (type, value) => {
@@ -1449,13 +1475,13 @@
 
             const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
             const filteredHistory = history.filter(entry => entry.header.data >= startDate && entry.header.data <= endDate);
-            const allVisits = filteredHistory.flatMap(entry => entry.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita));
-
-            if (allVisits.length === 0) {
+            
+            if (filteredHistory.length === 0) {
                 noReportData.innerHTML = `<p class="font-bold text-lg">Nenhum dado encontrado para o período selecionado.</p>`;
                 noReportData.classList.remove('hidden');
                 reportDataContainer.classList.add('hidden');
                 reportFooter.classList.add('hidden');
+                currentReportData = null;
                 return;
             }
             
@@ -1463,6 +1489,8 @@
             reportDataContainer.classList.remove('hidden');
             reportFooter.classList.remove('hidden');
 
+            const allVisits = filteredHistory.flatMap(entry => entry.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita));
+            
             const summary = allVisits.reduce((acc, v) => {
                 if (v.visita === 'T' || v.visita === 'P') {
                     acc.trabalhado++;
@@ -1478,7 +1506,7 @@
                 return acc;
             }, { trabalhado: 0, fechado: 0, recusado: 0, focos: 0, gramas: 0, tratamentoFocal: 0, depositosTratados: 0, eliminados: 0, residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0, hotspots: [] });
             
-            currentReportData = summary;
+            currentReportData = { summary, startDate, endDate, agent: agenteInput.value };
             reportDataContainer.innerHTML = `
                 <div class="text-center p-8 bg-green-50 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -1522,21 +1550,44 @@
             const username = agenteInput.value;
             if (!username) return;
             const sectorKey = `aceFlowSectorData_${username}`;
-            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
             const completedVisits = dailyData.visits.filter(v => v.bairro && v.quarteirao && v.logradouro && v.numero && v.imovel && (v.visita === 'T' || v.visita === 'P') && v.lado);
             for (const visit of completedVisits) {
-                const propertyId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}-${visit.imovel}-${visit.lado}`.toLowerCase().replace(/\s+/g, '-');
+                const propData = {
+                    bairro: formatAndCorrectText(visit.bairro),
+                    quarteirao: visit.quarteirao.trim(),
+                    logradouro: formatAndCorrectText(visit.logradouro),
+                    numero: visit.numero.trim().toUpperCase(),
+                    lado: visit.lado,
+                    tipo: visit.imovel
+                };
+                const propertyId = `${propData.bairro}-${propData.quarteirao}-${propData.logradouro}-${propData.numero}-${propData.tipo}-${propData.lado}`.toLowerCase().replace(/\s+/g, '-');
                 if (!sectorData.properties[propertyId]) {
-                    sectorData.properties[propertyId] = {
-                        id: propertyId, bairro: visit.bairro, quarteirao: visit.quarteirao, logradouro: visit.logradouro,
-                        numero: visit.numero, tipo: visit.imovel, lado: visit.lado
-                    };
+                    sectorData.properties[propertyId] = { ...propData, id: propertyId };
                 }
             }
             localStorage.setItem(sectorKey, JSON.stringify(sectorData));
         };
 
         // --- My Area (Minha Área) Functions ---
+        const getCompletedBlocks = () => {
+            const username = agenteInput.value;
+            if (!username) return {};
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            return sectorData.completedBlocks || {};
+        }
+
+        const setBlockAsCompleted = (bairro, quarteirao) => {
+            const username = agenteInput.value;
+            if (!username) return;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            const blockId = `${bairro}-${quarteirao}`;
+            sectorData.completedBlocks[blockId] = true;
+            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+        }
+
         const displayMyArea = () => {
             sectorNavigationStack = [{ view: 'neighborhoods' }];
             renderNeighborhoods();
@@ -1549,7 +1600,7 @@
             const totalAllProperties = properties.length;
             const neighborhoods = [...new Set(properties.map(p => p.bairro))].sort((a, b) => a.localeCompare(b));
             
-            let contentHTML = '<div class="space-y-4">';
+            let contentHTML = '<div class="space-y-4 p-4">';
             if (neighborhoods.length > 0) {
                 contentHTML += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
                 neighborhoods.forEach(bairro => {
@@ -1577,11 +1628,17 @@
             sectorNavigationStack.push({ view: 'blocks', bairro: bairro });
             const properties = getAreaProperties().filter(p => p.bairro === bairro);
             const blocks = [...new Set(properties.map(p => p.quarteirao))].sort((a, b) => parseInt(a) - parseInt(b));
+            const completedBlocks = getCompletedBlocks();
 
             let contentHTML = '<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 p-4">';
             if (blocks.length > 0) {
                 blocks.forEach(block => {
-                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-4 w-full aspect-square flex items-center justify-center sector-block-btn" data-bairro="${bairro}" data-quarteirao="${block}">${block}</button>`;
+                    const blockId = `${bairro}-${block}`;
+                    const isCompleted = completedBlocks[blockId];
+                    const buttonClass = isCompleted 
+                        ? 'bg-green-100 border-green-500 text-green-700' 
+                        : 'bg-white hover:bg-gray-100 border-gray-300 text-gray-800';
+                    contentHTML += `<button class="btn ${buttonClass} border-2 text-lg p-4 w-full aspect-square flex items-center justify-center sector-block-btn" data-bairro="${bairro}" data-quarteirao="${block}">${block}</button>`;
                 });
             } else {
                 contentHTML += '<p class="col-span-full text-center text-gray-500 py-8">Nenhum quarteirão cadastrado para este bairro.</p>';
@@ -1598,18 +1655,9 @@
             sectorNavigationStack.push({ view: 'properties', bairro: bairro, quarteirao: quarteirao });
             const properties = getAreaProperties().filter(p => p.bairro === bairro && p.quarteirao === quarteirao);
             
-            properties.sort((a,b) => {
-                const logradouroComp = a.logradouro.localeCompare(b.logradouro);
-                if (logradouroComp !== 0) return logradouroComp;
-                const numA = parseInt(a.numero.replace(/\D/g,''), 10) || 0;
-                const numB = parseInt(b.numero.replace(/\D/g,''), 10) || 0;
-                if (numA !== numB) return numA - numB;
-                return a.numero.localeCompare(b.numero);
-            });
-
             const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
-            let contentHTML = `<div class="overflow-x-auto bg-white rounded-lg"><table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-100 sticky top-0">
+            let contentHTML = `<div class="overflow-auto"><table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100 sticky top-0 z-10">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Rua</th>
@@ -1644,7 +1692,26 @@
             sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${quarteirao}`;
             sectorModalContent.innerHTML = contentHTML;
             sectorBackBtn.classList.remove('hidden');
-            sectorModalFooter.innerHTML = '';
+            sectorModalFooter.innerHTML = `<button id="completeBlockBtn" class="btn bg-green-700 hover:bg-green-800 text-white w-full" data-bairro="${bairro}" data-quarteirao="${quarteirao}">Concluir Quarteirão</button>`;
+            
+            document.getElementById('completeBlockBtn').addEventListener('click', (e) => {
+                const { bairro, quarteirao } = e.currentTarget.dataset;
+                setBlockAsCompleted(bairro, quarteirao);
+                showToast(`Quarteirão ${quarteirao} marcado como concluído!`);
+                
+                // Navigate to next block automatically
+                const allBlocksInNeighborhood = [...new Set(getAreaProperties().filter(p => p.bairro === bairro).map(p => p.quarteirao))].sort((a, b) => parseInt(a) - parseInt(b));
+                const currentBlockIndex = allBlocksInNeighborhood.findIndex(b => b === quarteirao);
+                
+                handleSectorBack(); // Go back to block list first
+                
+                if (currentBlockIndex !== -1 && currentBlockIndex + 1 < allBlocksInNeighborhood.length) {
+                    const nextBlock = allBlocksInNeighborhood[currentBlockIndex + 1];
+                    setTimeout(() => renderPropertiesForBlock(bairro, nextBlock), 100); // Small delay for smoother transition
+                } else {
+                    showToast("Todos os quarteirões deste bairro foram visualizados.");
+                }
+            });
         };
 
         const showPropertyForm = (property = null) => {
@@ -1656,20 +1723,19 @@
             sectorModalContent.innerHTML = `
                 <div class="p-4 space-y-4 sector-view">
                     <form id="property-form" class="space-y-4" data-editing-id="${isEditing ? property.id : ''}">
-                        <div><label class="text-sm font-bold text-gray-500">Bairro</label><input type="text" id="prop-bairro" class="form-input mt-1" value="${property?.bairro || ''}" required></div>
-                        <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" id="prop-quarteirao" class="form-input mt-1" value="${property?.quarteirao || ''}" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Bairro</label><input type="text" id="prop-bairro" class="form-input mt-1" value="${property?.bairro || currentView.bairro || ''}" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" id="prop-quarteirao" class="form-input mt-1" value="${property?.quarteirao || currentView.quarteirao || ''}" required></div>
                         <div><label class="text-sm font-bold text-gray-500">Logradouro</label><input type="text" id="prop-logradouro" class="form-input mt-1" value="${property?.logradouro || ''}" required></div>
                         <div><label class="text-sm font-bold text-gray-500">Número</label><input type="text" id="prop-numero" class="form-input mt-1" value="${property?.numero || ''}" required></div>
                         <div><label class="text-sm font-bold text-gray-500">Lado</label><select id="prop-lado" class="form-select mt-1" required><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
                         <div><label class="text-sm font-bold text-gray-500">Tipo</label><select id="prop-tipo" class="form-select mt-1" required><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
-                        <button type="submit" class="btn bg-green-700 hover:bg-green-800 text-white w-full">Salvar Alterações</button>
                     </form>
                 </div>`;
             if (isEditing) {
                 document.getElementById('prop-lado').value = property.lado;
                 document.getElementById('prop-tipo').value = property.tipo;
             }
-            sectorModalFooter.innerHTML = '';
+            sectorModalFooter.innerHTML = `<button type="submit" form="property-form" class="btn bg-green-700 hover:bg-green-800 text-white w-full">Salvar Alterações</button>`;
             sectorBackBtn.classList.remove('hidden');
             document.getElementById('property-form').addEventListener('submit', handleSaveProperty);
         };
@@ -1690,13 +1756,13 @@
             const editingId = form.dataset.editingId;
             const username = agenteInput.value;
             const sectorKey = `aceFlowSectorData_${username}`;
-            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
 
             const propData = {
-                bairro: formatAndCorrectText(document.getElementById('prop-bairro').value.trim()),
+                bairro: formatAndCorrectText(document.getElementById('prop-bairro').value),
                 quarteirao: document.getElementById('prop-quarteirao').value.trim(),
-                logradouro: formatAndCorrectText(document.getElementById('prop-logradouro').value.trim()),
-                numero: document.getElementById('prop-numero').value.trim(),
+                logradouro: formatAndCorrectText(document.getElementById('prop-logradouro').value),
+                numero: document.getElementById('prop-numero').value.trim().toUpperCase(),
                 lado: document.getElementById('prop-lado').value,
                 tipo: document.getElementById('prop-tipo').value,
             };
@@ -1712,7 +1778,10 @@
             const newId = `${propData.bairro}-${propData.quarteirao}-${propData.logradouro}-${propData.numero}-${propData.tipo}-${propData.lado}`.toLowerCase().replace(/\s+/g, '-');
             propData.id = newId;
 
-            if (editingId && editingId !== newId) delete sectorData.properties[editingId];
+            // If editing and the ID has changed, remove the old entry
+            if (editingId && editingId !== newId) {
+                delete sectorData.properties[editingId];
+            }
             
             sectorData.properties[newId] = propData;
             localStorage.setItem(sectorKey, JSON.stringify(sectorData));
@@ -1721,17 +1790,30 @@
         };
 
         const handleSectorBack = () => {
+            if (sectorNavigationStack.length <= 1) {
+                closeSectorModalBtn.click();
+                return;
+            }
             sectorNavigationStack.pop(); // Remove current view
             const lastView = sectorNavigationStack[sectorNavigationStack.length - 1];
+            
+            // Temporarily remove the last view to render the one before it
+            sectorNavigationStack.pop(); 
+
             if (lastView) {
                 if (lastView.view === 'neighborhoods') {
-                    renderNeighborhoods();
+                    displayMyArea();
                 } else if (lastView.view === 'blocks') {
-                    renderBlocks(lastView.bairro);
+                    renderNeighborhoods(); // Go back to neighborhood list
                 } else if (lastView.view === 'properties') {
-                    renderPropertiesForBlock(lastView.bairro, lastView.quarteirao);
-                } else {
-                    renderNeighborhoods(); // Fallback to the main view
+                    renderBlocks(lastView.bairro); // Go back to block list
+                } else if (lastView.view === 'form') {
+                    const fromView = lastView.from;
+                    if (fromView.view === 'properties') {
+                       renderPropertiesForBlock(fromView.bairro, fromView.quarteirao);
+                    } else {
+                       renderNeighborhoods();
+                    }
                 }
             } else {
                 closeSectorModalBtn.click();
@@ -1776,112 +1858,48 @@
                 return;
             }
 
-            const doc = new jsPDF();
             const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
             const agentName = agenteInput.value || "Agente";
             const dateStr = new Date().toLocaleDateString('pt-BR');
 
-            doc.setFontSize(20);
-            doc.text(`Relatório de Área de Atuação - ${agentName}`, 105, 15, { align: 'center' });
-            doc.setFontSize(12);
-            doc.text(`Gerado em: ${dateStr}`, 105, 22, { align: 'center' });
+            const headerInfo = [
+                [{content: `Agente: ${agentName}`, styles: {fontStyle: 'bold'}}],
+                [{content: `Gerado em: ${dateStr}`, styles: {fontStyle: 'bold'}}]
+            ];
 
             const groupedByBairro = properties.reduce((acc, prop) => {
                 (acc[prop.bairro] = acc[prop.bairro] || []).push(prop);
                 return acc;
             }, {});
 
-            const grandTotalSummary = { R: 0, C: 0, TB: 0, O: 0, total: 0 };
-            let lastY = 30;
-
+            const tables = [];
+            
             Object.keys(groupedByBairro).sort().forEach(bairro => {
+                tables.push({
+                    spacing: 5,
+                    head: [[{ content: `Bairro: ${bairro}`, styles: { halign: 'center', fillColor: '#374151' } }]],
+                });
+
                 const groupedByQuarteirao = groupedByBairro[bairro].reduce((acc, prop) => {
                     (acc[prop.quarteirao] = acc[prop.quarteirao] || []).push(prop);
                     return acc;
                 }, {});
 
-                if (lastY > 250) { doc.addPage(); lastY = 20; }
-                
-                doc.autoTable({
-                    startY: lastY,
-                    head: [[{ content: `Bairro: ${bairro}`, styles: { halign: 'center', ...getStandardPdfStyles().headStyles, fontSize: 16 } }]],
-                    theme: 'grid'
-                });
-                lastY = doc.lastAutoTable.finalY;
-
                 Object.keys(groupedByQuarteirao).sort((a, b) => parseInt(a) - parseInt(b)).forEach(quarteirao => {
-                    if (lastY > 240) { doc.addPage(); lastY = 20; }
-                    
-                    doc.autoTable({
-                        startY: lastY,
-                        head: [[{ content: `Quarteirão: ${quarteirao}`, colSpan: 4, styles: { halign: 'center', ...getStandardPdfStyles().headStyles, fillColor: '#6B7280', fontSize: 14 } }]],
-                        theme: 'grid'
+                    const rows = groupedByQuarteirao[quarteirao].map(prop => [prop.logradouro, prop.numero, prop.lado, imovelMap[prop.tipo] || prop.tipo]);
+                    tables.push({
+                        spacing: 2,
+                        head: [[{ content: `Quarteirão: ${quarteirao}`, colSpan: 4, styles: { halign: 'center', fillColor: '#6B7280' } }]],
                     });
-                    lastY = doc.lastAutoTable.finalY;
-
-                    const sortedProps = groupedByQuarteirao[quarteirao].sort((a, b) => {
-                        const logradouroComp = a.logradouro.localeCompare(b.logradouro);
-                        if (logradouroComp !== 0) return logradouroComp;
-                        const numA = parseInt(a.numero.replace(/\D/g,''), 10) || 0;
-                        const numB = parseInt(b.numero.replace(/\D/g,''), 10) || 0;
-                        if (numA !== numB) return numA - numB;
-                        return a.numero.localeCompare(b.numero);
-                    });
-                    const rows = sortedProps.map(prop => [prop.logradouro, prop.numero, prop.lado, imovelMap[prop.tipo] || prop.tipo]);
-                    doc.autoTable({
-                        startY: lastY,
-                        head: [['Logradouro', 'Número', 'Lado', 'Tipo']],
+                    tables.push({
+                        spacing: 0,
+                        head: [['Logradouro', 'Número', 'Lado', 'Tipo do Imóvel']],
                         body: rows,
-                        ...getStandardPdfStyles({styles: {fontSize: 8}, headStyles: {fontSize: 9}}),
                     });
-                    lastY = doc.lastAutoTable.finalY;
-
-                    const blockSummary = { R: 0, C: 0, TB: 0, O: 0, total: 0 };
-                    groupedByQuarteirao[quarteirao].forEach(prop => {
-                        blockSummary[prop.tipo] = (blockSummary[prop.tipo] || 0) + 1;
-                        blockSummary.total++;
-                    });
-                    
-                    grandTotalSummary.R += blockSummary.R;
-                    grandTotalSummary.C += blockSummary.C;
-                    grandTotalSummary.TB += blockSummary.TB;
-                    grandTotalSummary.O += blockSummary.O;
-                    grandTotalSummary.total += blockSummary.total;
-
-                    const summaryBody = [[blockSummary.R, blockSummary.C, blockSummary.TB, blockSummary.O, { content: blockSummary.total, styles: { fontStyle: 'bold' } }]];
-                    doc.autoTable({
-                        startY: lastY,
-                        head: [['Residências', 'Comércios', 'Ter. Baldios', 'Outros', 'Total no Quarteirão']],
-                        body: summaryBody,
-                        theme: 'grid',
-                        headStyles: { fillColor: '#A9A9A9', textColor: '#FFFFFF', fontSize: 8 },
-                        styles: { fontSize: 8, halign: 'center' },
-                    });
-                    lastY = doc.lastAutoTable.finalY + 5;
                 });
-                lastY += 5;
             });
 
-            if (lastY > 250) { doc.addPage(); lastY = 20; }
-            
-            doc.autoTable({
-                startY: lastY,
-                head: [[{ content: 'Total Geral de Todos os Imóveis na Área', colSpan: 5, styles: { halign: 'center', ...getStandardPdfStyles().headStyles, fontSize: 16, fillColor: '#111827' } }]],
-                theme: 'grid'
-            });
-            lastY = doc.lastAutoTable.finalY;
-
-            const grandTotalBody = [[grandTotalSummary.R, grandTotalSummary.C, grandTotalSummary.TB, grandTotalSummary.O, { content: grandTotalSummary.total, styles: { fontStyle: 'bold' } }]];
-            doc.autoTable({
-                startY: lastY,
-                head: [['Residências', 'Comércios', 'Ter. Baldios', 'Outros', 'Total Geral']],
-                body: grandTotalBody,
-                theme: 'grid',
-                headStyles: { ...getStandardPdfStyles().headStyles, fontSize: 12 },
-                bodyStyles: { ...getStandardPdfStyles().bodyStyles, fontSize: 12, halign: 'center' },
-            });
-
-            doc.save(`Area_de_Trabalho_${agentName.replace(/\s/g, '_')}.pdf`);
+            generatePdf(`Relatório de Área de Atuação`, headerInfo, tables, `Area_Trabalho_${agentName.replace(/\s/g, '_')}.pdf`);
         };
 
         // --- EVENT LISTENERS ---
@@ -1903,8 +1921,7 @@
                         agenteInput.value = user;
                         agenteInput.classList.add('is-filled');
                         fixedAgentName.textContent = user;
-                        loadData(); 
-                        updateAndRenderSummary();
+                        initAppLogic();
                     } else { loginError.textContent = result.message || "Usuário ou senha inválidos."; }
                 }).catch(error => {
                     console.error("Erro de autenticação:", error);
@@ -1926,8 +1943,7 @@
                 showModal("Limpar os dados do dia? Esta ação NÃO salva no histórico. Use 'Gerar PDF' para salvar.", () => {
                     saveLastPropertyReminder();
                     localStorage.removeItem('aceFlowDailyData');
-                    loadData();
-                    updateAndRenderSummary();
+                    initAppLogic(); // Reloads data and summary
                     displayLastPropertyReminder();
                     nextPropertySuggestionContainer.classList.add('hidden');
                 });
@@ -1955,19 +1971,20 @@
 
                 const deleteBtn = e.target.closest('.delete-property-btn');
                 if (deleteBtn) {
-                    showModal("Tem certeza que deseja excluir este imóvel da sua área?", () => {
-                        const propertyId = deleteBtn.dataset.id;
-                        const username = agenteInput.value;
-                        const sectorKey = `aceFlowSectorData_${username}`;
-                        let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
-                        const propToDelete = sectorData.properties[propertyId];
-                        if (propToDelete) {
-                            delete sectorData.properties[propertyId];
-                            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
-                            showToast("Imóvel excluído.");
-                            renderPropertiesForBlock(propToDelete.bairro, propToDelete.quarteirao);
-                        }
-                    });
+                    const propertyId = deleteBtn.dataset.id;
+                    const username = agenteInput.value;
+                    const sectorKey = `aceFlowSectorData_${username}`;
+                    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+                    const propToDelete = sectorData.properties[propertyId];
+                    if (propToDelete) {
+                        delete sectorData.properties[propertyId];
+                        localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                        showToast("Imóvel excluído.");
+                        // Refresh the view
+                        const currentView = sectorNavigationStack[sectorNavigationStack.length - 1];
+                        sectorNavigationStack.pop();
+                        renderPropertiesForBlock(currentView.bairro, currentView.quarteirao);
+                    }
                     return;
                 }
 
@@ -1983,27 +2000,26 @@
         if (downloadReportPdfBtn) {
             downloadReportPdfBtn.addEventListener('click', () => {
                 if (!currentReportData) { showToast("Gere um relatório primeiro."); return; }
-                const doc = new jsPDF();
-                const summary = currentReportData;
-                const startDate = reportStartDate.value;
-                const endDate = reportEndDate.value;
+                const { summary, startDate, endDate, agent } = currentReportData;
                 
-                doc.setFontSize(20);
-                doc.text(`Compilado de Dados - Agente: ${agenteInput.value}`, 15, 20);
-                doc.setFontSize(18);
-                doc.text(`Período: ${new Date(startDate + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, 15, 28);
+                const headerInfo = [
+                    [{content: `Agente: ${agent}`, styles: {fontStyle: 'bold'}}],
+                    [{content: `Período: ${new Date(startDate + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, styles: {fontStyle: 'bold'}}]
+                ];
 
-                doc.autoTable({ startY: 35, head: [['Detalhes dos Imóveis', 'Total']], body: [['Residências', summary.residencia], ['Comércios', summary.comercio], ['Terrenos Baldios', summary.terrenoBaldio], ['Outros', summary.outro], [{ content: 'Total Trabalhados', styles: { fontStyle: 'bold' } }, { content: summary.trabalhado, styles: { fontStyle: 'bold' } }]], ...getStandardPdfStyles({styles: {fontSize: 16}, headStyles: {fontSize: 16}}) });
-                doc.autoTable({ startY: doc.lastAutoTable.finalY + 5, head: [['Resumo da Produção', 'Total']], body: [['Tratamentos Focais', summary.tratamentoFocal], ['Larvicida Utilizado', `${summary.gramas.toFixed(1)} g`], ['Depósitos Tratados', summary.depositosTratados], ['Depósitos Eliminados', summary.eliminados]], ...getStandardPdfStyles({styles: {fontSize: 16}, headStyles: {fontSize: 16}}) });
-                doc.autoTable({ startY: doc.lastAutoTable.finalY + 5, head: [['Situação das Visitas', 'Total']], body: [['Imóveis Fechados', summary.fechado], ['Recusas', summary.recusado], [{ content: 'Total de Focos', styles: { fontStyle: 'bold', textColor: '#DC2626' } }, { content: summary.focos, styles: { fontStyle: 'bold', textColor: '#DC2626' } }]], ...getStandardPdfStyles({styles: {fontSize: 16}, headStyles: {fontSize: 16}}) });
-                
+                const tables = [
+                    { spacing: 5, head: [['Detalhes dos Imóveis', 'Total']], body: [['Residências', summary.residencia], ['Comércios', summary.comercio], ['Terrenos Baldios', summary.terrenoBaldio], ['Outros', summary.outro], [{ content: 'Total Trabalhados', styles: { fontStyle: 'bold' } }, { content: summary.trabalhado, styles: { fontStyle: 'bold' } }]] },
+                    { spacing: 5, head: [['Resumo da Produção', 'Total']], body: [['Tratamentos Focais', summary.tratamentoFocal], ['Larvicida Utilizado', `${summary.gramas.toFixed(1)} g`], ['Depósitos Tratados', summary.depositosTratados], ['Depósitos Eliminados', summary.eliminados]] },
+                    { spacing: 5, head: [['Situação das Visitas', 'Total']], body: [['Imóveis Fechados', summary.fechado], ['Recusas', summary.recusado], [{ content: 'Total de Focos', styles: { fontStyle: 'bold', textColor: '#DC2626' } }, { content: summary.focos, styles: { fontStyle: 'bold', textColor: '#DC2626' } }]] }
+                ];
+
                 if(summary.hotspots.length > 0) {
                     const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
                     const hotspotBody = summary.hotspots.map(f => [`${f.bairro}, Q:${f.quarteirao}`, `${f.logradouro}, ${f.numero} (${imovelMap[f.tipo]})`]);
-                    doc.autoTable({ startY: doc.lastAutoTable.finalY + 5, head: [['Localização do Foco', 'Endereço']], body: hotspotBody, ...getStandardPdfStyles() });
+                    tables.push({ spacing: 5, head: [['Localização do Foco', 'Endereço']], body: hotspotBody });
                 }
-                
-                doc.save(`relatorio_periodo_${agenteInput.value.replace(/\s/g, '_')}.pdf`);
+
+                generatePdf(`Compilado de Dados`, headerInfo, tables, `relatorio_periodo_${agent.replace(/\s/g, '_')}.pdf`);
             });
         }
         
@@ -2050,7 +2066,7 @@
                         document.querySelectorAll('.visita-card').forEach((card, index) => {
                             if (index > sourceIndex) {
                                 const fieldToUpdate = card.querySelector(fieldClass);
-                                if (fieldToUpdate) {
+                                if (fieldToUpdate && !fieldToUpdate.value) { // Only fill if empty
                                     fieldToUpdate.value = valueToReplicate;
                                     fieldToUpdate.dataset.manualInput = 'false'; // Mark as not manual
                                     fieldToUpdate.classList.toggle('is-filled', !!valueToReplicate);
@@ -2088,6 +2104,8 @@
                 if (e.target.matches('.toggle-check')) {
                     e.target.classList.toggle('is-checked');
                     updateToggleHTML(e.target);
+                    const card = e.target.closest('.visita-card');
+                    if (card) updateCardStatus(card);
                     updateAndRenderSummary();
                     saveData();
                 }
@@ -2328,6 +2346,26 @@
             infoDiaSection.classList.toggle('card-completed', allFilled);
         };
         
+        const initAppLogic = () => {
+            loadData(); 
+            updateAndRenderSummary();
+            agentList = JSON.parse(localStorage.getItem('aceFlowagentList')) || [];
+            bairroList = JSON.parse(localStorage.getItem('aceFlowbairroList')) || [];
+            streetList = JSON.parse(localStorage.getItem('aceFlowstreetList')) || [];
+            agentSuggestions.innerHTML = agentList.map(item => `<option value="${item}"></option>`).join('');
+            bairroSuggestions.innerHTML = bairroList.map(item => `<option value="${item}"></option>`).join('');
+            streetSuggestions.innerHTML = streetList.map(item => `<option value="${item}"></option>`).join('');
+            populateSelects();
+            const today = new Date();
+            if (!dataInput.value) {
+                dataInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                dataInput.classList.add('is-filled');
+            }
+            loadGoalData();
+            displayLastPropertyReminder();
+            checkHeaderCompletion();
+        };
+
         const initApp = () => {
             const savedUser = JSON.parse(localStorage.getItem('aceFlowUser'));
             if (savedUser && savedUser.isLoggedIn) {
@@ -2335,7 +2373,7 @@
                 mainContent.classList.remove('hidden'); fixedInfoBar.classList.remove('hidden');
                 agenteInput.value = savedUser.username; agenteInput.classList.add('is-filled');
                 fixedAgentName.textContent = savedUser.username;
-                loadData(); updateAndRenderSummary();
+                initAppLogic();
             } else {
                 const sections = document.querySelectorAll('.fade-in-up');
                 const observer = new IntersectionObserver(entries => {
@@ -2345,19 +2383,6 @@
                 }, { threshold: 0.1 });
                 sections.forEach(section => observer.observe(section));
             }
-            agentList = JSON.parse(localStorage.getItem('aceFlowagentList')) || [];
-            bairroList = JSON.parse(localStorage.getItem('aceFlowbairroList')) || [];
-            streetList = JSON.parse(localStorage.getItem('aceFlowstreetList')) || [];
-            agentSuggestions.innerHTML = agentList.map(item => `<option value="${item}"></option>`).join('');
-            bairroSuggestions.innerHTML = bairroList.map(item => `<option value="${item}"></option>`).join('');
-            streetSuggestions.innerHTML = streetList.map(item => `<option value="${item}"></option>`).join('');
-            populateSelects();
-            const today = new Date();
-            dataInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            dataInput.classList.add('is-filled');
-            loadGoalData();
-            displayLastPropertyReminder();
-            checkHeaderCompletion();
         };
         
         if (backToHomeBtn) backToHomeBtn.addEventListener('click', () => { localStorage.removeItem('aceFlowUser'); location.reload(); });
@@ -2514,7 +2539,7 @@
                 finalY = doc.lastAutoTable.finalY + 10;
             };
 
-            doc.setFontSize(22);
+            doc.setFontSize(16);
             doc.text("Relatório Profissional - Análise da Equipe", pageWidth / 2, finalY, { align: 'center' });
             finalY += 15;
 
@@ -2531,7 +2556,7 @@
                     startY: finalY,
                     head: [['Panorama Geral', 'Total']],
                     body: summaryBody,
-                    ...getStandardPdfStyles({styles: {fontSize: 16}, headStyles: {fontSize: 16}}),
+                    ...getStandardPdfStyles({styles: {fontSize: 12}, headStyles: {fontSize: 12}})
                 });
             });
 
@@ -2546,7 +2571,7 @@
                         doc.addPage();
                         finalY = margin;
                     }
-                    doc.setFontSize(18);
+                    doc.setFontSize(14);
                     doc.text(title, margin, finalY);
                     finalY += 5;
                     doc.addImage(imgData, 'PNG', margin, finalY, imgWidth, imgHeight);
@@ -2565,7 +2590,7 @@
                     doc.addPage();
                     finalY = margin;
                 }
-                doc.setFontSize(18);
+                doc.setFontSize(14);
                 doc.text(title, margin, finalY);
                 finalY += 8;
 
@@ -2573,7 +2598,7 @@
                 tempDiv.innerHTML = htmlString;
                 
                 Array.from(tempDiv.children).forEach(el => {
-                    doc.setFontSize(el.tagName === 'H3' ? 14 : 12);
+                    doc.setFontSize(el.tagName === 'H3' ? 12 : 10);
                     doc.setFont('helvetica', el.tagName === 'H3' ? 'bold' : 'normal');
                     const text = el.innerText;
                     const splitText = doc.splitTextToSize(text, pageWidth - (margin * 2));
