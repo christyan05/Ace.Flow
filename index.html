@@ -712,6 +712,7 @@
         let fociDistributionChartInstance = null;
         let coordinatorReportData = null; // Store data for coordinator PDF export
         let debounceTimer;
+        let lastCompletedQuarteirao = null; // NEW: Stores the last completed block number
 
         // --- DOM SELECTORS ---
         const landingPage = document.getElementById('landingPage');
@@ -892,6 +893,9 @@
                                 <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
                             </div>
+                            <div class="mt-4">
+                                <button type="button" class="btn bg-green-700 hover:bg-green-800 text-white w-full concluir-quarteirao-btn">Concluir Quarteirão</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -945,8 +949,15 @@
             
             newCard.querySelector('.bairro-imovel').value = prevCard ? prevCard.querySelector('.bairro-imovel').value : bairroHeader;
             newCard.querySelector('.logradouro').value = prevCard ? prevCard.querySelector('.logradouro').value : '';
-            newCard.querySelector('.quarteirao').value = prevCard ? prevCard.querySelector('.quarteirao').value : '';
             newCard.querySelector('.lado').value = prevCard ? prevCard.querySelector('.lado').value : '';
+
+            // NEW: Logic to auto-increment quarteirão
+            if (lastCompletedQuarteirao !== null) {
+                newCard.querySelector('.quarteirao').value = lastCompletedQuarteirao + 1;
+                lastCompletedQuarteirao = null; // Reset after use
+            } else if (prevCard) {
+                newCard.querySelector('.quarteirao').value = prevCard.querySelector('.quarteirao').value;
+            }
 
             ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado', '.numero'].forEach(sel => {
                 const input = newCard.querySelector(sel);
@@ -1382,11 +1393,21 @@
             
             tables.forEach(table => {
                 const finalY = doc.lastAutoTable.finalY || 25;
+                const defaultStyles = getStandardPdfStyles();
+                
+                // Merge table-specific styles with defaults
+                const tableSpecificStyles = {
+                    styles: { ...defaultStyles.styles, ...table.styles },
+                    headStyles: { ...defaultStyles.headStyles, ...table.headStyles },
+                    bodyStyles: { ...defaultStyles.bodyStyles, ...table.bodyStyles },
+                    alternateRowStyles: { ...defaultStyles.alternateRowStyles, ...table.alternateRowStyles },
+                };
+
                 doc.autoTable({
                     startY: finalY + table.spacing,
                     head: table.head,
                     body: table.body,
-                    ...getStandardPdfStyles({styles: {fontSize: 10}, headStyles: {fontSize: 10}}),
+                    ...tableSpecificStyles,
                     willDrawCell: table.willDrawCell,
                     columnStyles: table.columnStyles
                 });
@@ -1439,17 +1460,32 @@
                 i + 1, v.bairro, v.logradouro, v.quarteirao, v.numero, imovelMap[v.imovel] || v.imovel, v.lado, visitaMap[v.visita] || v.visita, v.horario || ''
             ]);
             
+            const largeFontOptions = { styles: { fontSize: 16, cellPadding: 3 }, headStyles: { fontSize: 16 } };
+            const smallFontOptions = { styles: { fontSize: 9, cellPadding: 2 }, headStyles: { fontSize: 10 } };
+            
             const tables = [
-                { spacing: 8, head: [['Detalhes dos Imóveis Trabalhados', 'Total']], body: detalhesData },
-                { spacing: 5, head: [['Resumo Geral da Produção', 'Total']], body: producaoData, willDrawCell: (data) => {
+                { spacing: 8, head: [['Detalhes dos Imóveis Trabalhados', 'Total']], body: detalhesData, ...largeFontOptions },
+                { 
+                  spacing: 5, 
+                  head: [['Resumo Geral da Produção', 'Total']], 
+                  body: producaoData, 
+                  willDrawCell: (data) => {
                     if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
                         data.cell.styles.textColor = '#e74c3c'; data.cell.styles.fontStyle = 'bold';
                         if (data.row.cells[1]) { data.row.cells[1].styles.textColor = '#e74c3c'; data.row.cells[1].styles.fontStyle = 'bold'; }
                     }
-                }},
-                { spacing: 10, head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], body: visitData, columnStyles: {
+                  },
+                  ...largeFontOptions
+                },
+                { 
+                  spacing: 10, 
+                  head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], 
+                  body: visitData, 
+                  columnStyles: {
                     0: { cellWidth: 8 }, 1: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 }, 5: { cellWidth: 15 }, 6: { cellWidth: 12 }, 7: { cellWidth: 18 }, 8: { cellWidth: 18 }
-                }}
+                  },
+                  ...smallFontOptions
+                }
             ];
             
             generatePdf("Relatório de Atividades Diárias", headerInfo, tables, `ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
@@ -1692,26 +1728,7 @@
             sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${quarteirao}`;
             sectorModalContent.innerHTML = contentHTML;
             sectorBackBtn.classList.remove('hidden');
-            sectorModalFooter.innerHTML = `<button id="completeBlockBtn" class="btn bg-green-700 hover:bg-green-800 text-white w-full" data-bairro="${bairro}" data-quarteirao="${quarteirao}">Concluir Quarteirão</button>`;
-            
-            document.getElementById('completeBlockBtn').addEventListener('click', (e) => {
-                const { bairro, quarteirao } = e.currentTarget.dataset;
-                setBlockAsCompleted(bairro, quarteirao);
-                showToast(`Quarteirão ${quarteirao} marcado como concluído!`);
-                
-                // Navigate to next block automatically
-                const allBlocksInNeighborhood = [...new Set(getAreaProperties().filter(p => p.bairro === bairro).map(p => p.quarteirao))].sort((a, b) => parseInt(a) - parseInt(b));
-                const currentBlockIndex = allBlocksInNeighborhood.findIndex(b => b === quarteirao);
-                
-                handleSectorBack(); // Go back to block list first
-                
-                if (currentBlockIndex !== -1 && currentBlockIndex + 1 < allBlocksInNeighborhood.length) {
-                    const nextBlock = allBlocksInNeighborhood[currentBlockIndex + 1];
-                    setTimeout(() => renderPropertiesForBlock(bairro, nextBlock), 100); // Small delay for smoother transition
-                } else {
-                    showToast("Todos os quarteirões deste bairro foram visualizados.");
-                }
-            });
+            sectorModalFooter.innerHTML = ''; // Removed the old "Concluir Quarteirão" button from here
         };
 
         const showPropertyForm = (property = null) => {
@@ -2007,16 +2024,18 @@
                     [{content: `Período: ${new Date(startDate + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, styles: {fontStyle: 'bold'}}]
                 ];
 
+                const largeFontOptions = { styles: { fontSize: 16, cellPadding: 3 }, headStyles: { fontSize: 16 } };
+
                 const tables = [
-                    { spacing: 5, head: [['Detalhes dos Imóveis', 'Total']], body: [['Residências', summary.residencia], ['Comércios', summary.comercio], ['Terrenos Baldios', summary.terrenoBaldio], ['Outros', summary.outro], [{ content: 'Total Trabalhados', styles: { fontStyle: 'bold' } }, { content: summary.trabalhado, styles: { fontStyle: 'bold' } }]] },
-                    { spacing: 5, head: [['Resumo da Produção', 'Total']], body: [['Tratamentos Focais', summary.tratamentoFocal], ['Larvicida Utilizado', `${summary.gramas.toFixed(1)} g`], ['Depósitos Tratados', summary.depositosTratados], ['Depósitos Eliminados', summary.eliminados]] },
-                    { spacing: 5, head: [['Situação das Visitas', 'Total']], body: [['Imóveis Fechados', summary.fechado], ['Recusas', summary.recusado], [{ content: 'Total de Focos', styles: { fontStyle: 'bold', textColor: '#DC2626' } }, { content: summary.focos, styles: { fontStyle: 'bold', textColor: '#DC2626' } }]] }
+                    { spacing: 5, head: [['Detalhes dos Imóveis', 'Total']], body: [['Residências', summary.residencia], ['Comércios', summary.comercio], ['Terrenos Baldios', summary.terrenoBaldio], ['Outros', summary.outro], [{ content: 'Total Trabalhados', styles: { fontStyle: 'bold' } }, { content: summary.trabalhado, styles: { fontStyle: 'bold' } }]], ...largeFontOptions },
+                    { spacing: 5, head: [['Resumo da Produção', 'Total']], body: [['Tratamentos Focais', summary.tratamentoFocal], ['Larvicida Utilizado', `${summary.gramas.toFixed(1)} g`], ['Depósitos Tratados', summary.depositosTratados], ['Depósitos Eliminados', summary.eliminados]], ...largeFontOptions },
+                    { spacing: 5, head: [['Situação das Visitas', 'Total']], body: [['Imóveis Fechados', summary.fechado], ['Recusas', summary.recusado], [{ content: 'Total de Focos', styles: { fontStyle: 'bold', textColor: '#DC2626' } }, { content: summary.focos, styles: { fontStyle: 'bold', textColor: '#DC2626' } }]], ...largeFontOptions }
                 ];
 
                 if(summary.hotspots.length > 0) {
                     const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
                     const hotspotBody = summary.hotspots.map(f => [`${f.bairro}, Q:${f.quarteirao}`, `${f.logradouro}, ${f.numero} (${imovelMap[f.tipo]})`]);
-                    tables.push({ spacing: 5, head: [['Localização do Foco', 'Endereço']], body: hotspotBody });
+                    tables.push({ spacing: 5, head: [['Localização do Foco', 'Endereço']], body: hotspotBody, styles: { fontSize: 9 } });
                 }
 
                 generatePdf(`Compilado de Dados`, headerInfo, tables, `relatorio_periodo_${agent.replace(/\s/g, '_')}.pdf`);
@@ -2108,6 +2127,20 @@
                     if (card) updateCardStatus(card);
                     updateAndRenderSummary();
                     saveData();
+                }
+                // NEW: Handle "Concluir Quarteirão" button click
+                if (e.target.matches('.concluir-quarteirao-btn')) {
+                    const card = e.target.closest('.visita-card');
+                    const bairro = card.querySelector('.bairro-imovel').value.trim();
+                    const quarteirao = card.querySelector('.quarteirao').value.trim();
+                    if (bairro && quarteirao) {
+                        setBlockAsCompleted(bairro, quarteirao);
+                        lastCompletedQuarteirao = parseInt(quarteirao, 10);
+                        updateAndRenderSummary();
+                        showToast(`Quarteirão ${quarteirao} concluído!`);
+                    } else {
+                        showToast("Preencha o bairro e o quarteirão para concluir.");
+                    }
                 }
             });
         }
