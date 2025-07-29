@@ -1007,12 +1007,7 @@
                     horarioInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                     horarioInput.classList.add('is-filled');
                 }
-                // Debounced save to avoid excessive writes
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    saveCurrentDayToHistory(false);
-                    displayNextPropertySuggestion();
-                }, 1000);
+                // REMOVED: Automatic saving to history and sector data is now only triggered by "Gerar PDF".
             } else if (hasManualInput) {
                 statusIndicator.textContent = 'Em Preenchimento...';
                 statusIndicator.classList.add('text-orange-500'); 
@@ -1466,25 +1461,25 @@
             const tables = [
                 { spacing: 8, head: [['Detalhes dos Imóveis Trabalhados', 'Total']], body: detalhesData, ...largeFontOptions },
                 { 
-                  spacing: 5, 
-                  head: [['Resumo Geral da Produção', 'Total']], 
-                  body: producaoData, 
-                  willDrawCell: (data) => {
-                    if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
-                        data.cell.styles.textColor = '#e74c3c'; data.cell.styles.fontStyle = 'bold';
-                        if (data.row.cells[1]) { data.row.cells[1].styles.textColor = '#e74c3c'; data.row.cells[1].styles.fontStyle = 'bold'; }
-                    }
-                  },
-                  ...largeFontOptions
+                    spacing: 5, 
+                    head: [['Resumo Geral da Produção', 'Total']], 
+                    body: producaoData, 
+                    willDrawCell: (data) => {
+                        if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
+                            data.cell.styles.textColor = '#e74c3c'; data.cell.styles.fontStyle = 'bold';
+                            if (data.row.cells[1]) { data.row.cells[1].styles.textColor = '#e74c3c'; data.row.cells[1].styles.fontStyle = 'bold'; }
+                        }
+                    },
+                    ...largeFontOptions
                 },
                 { 
-                  spacing: 10, 
-                  head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], 
-                  body: visitData, 
-                  columnStyles: {
-                    0: { cellWidth: 8 }, 1: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 }, 5: { cellWidth: 15 }, 6: { cellWidth: 12 }, 7: { cellWidth: 18 }, 8: { cellWidth: 18 }
-                  },
-                  ...smallFontOptions
+                    spacing: 10, 
+                    head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], 
+                    body: visitData, 
+                    columnStyles: {
+                        0: { cellWidth: 8 }, 1: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 }, 5: { cellWidth: 15 }, 6: { cellWidth: 12 }, 7: { cellWidth: 18 }, 8: { cellWidth: 18 }
+                    },
+                    ...smallFontOptions
                 }
             ];
             
@@ -2071,12 +2066,15 @@
                 
                 const replicationClasses = ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado'];
                 const targetIsReplicable = replicationClasses.some(c => target.matches(c)) || target.matches('#bairro');
+                
+                // MODIFIED: Logic for data replication
                 if (targetIsReplicable) {
                     const valueToReplicate = target.value;
                     let sourceIndex = -1;
                     let fieldClass = '';
-                    if (target.matches('#bairro')) { fieldClass = '.bairro-imovel'; } 
-                    else {
+                    if (target.matches('#bairro')) { 
+                        fieldClass = '.bairro-imovel'; 
+                    } else {
                         const sourceCard = target.closest('.visita-card');
                         sourceIndex = sourceCard ? parseInt(sourceCard.dataset.index, 10) : -1;
                         fieldClass = replicationClasses.find(c => target.matches(c));
@@ -2085,9 +2083,10 @@
                         document.querySelectorAll('.visita-card').forEach((card, index) => {
                             if (index > sourceIndex) {
                                 const fieldToUpdate = card.querySelector(fieldClass);
-                                if (fieldToUpdate && !fieldToUpdate.value) { // Only fill if empty
+                                // This now overwrites existing data in subsequent cards
+                                if (fieldToUpdate) {
                                     fieldToUpdate.value = valueToReplicate;
-                                    fieldToUpdate.dataset.manualInput = 'false'; // Mark as not manual
+                                    fieldToUpdate.dataset.manualInput = 'false'; // Mark as auto-filled
                                     fieldToUpdate.classList.toggle('is-filled', !!valueToReplicate);
                                     updateCardStatus(card);
                                 }
