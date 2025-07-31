@@ -379,7 +379,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label for="totalImoveis" class="text-sm font-medium text-text-muted">Total de Imóveis na Área</label>
-                            <input type="number" id="totalImoveis" class="form-input mt-1" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                            <input type="number" id="totalImoveis" class="form-input mt-1" min="0">
                         </div>
                         <div>
                             <label for="cicloInicio" class="text-sm font-medium text-text-muted">Início do Ciclo</label>
@@ -802,8 +802,8 @@
         // --- UTILITY FUNCTIONS ---
         const toTitleCase = (str) => {
             if (!str) return '';
-            const lower = ['de', 'da', 'do', 'dos', 'das', 'e'];
-            return str.replace(/\w\S*/g, (txt, offset) => {
+            const lower = ['de', 'da', 'do', 'dos', 'das', 'e', 'a', 'o', 'em', 'no', 'na'];
+            return str.replace(/\b\w+/g, (txt, offset) => {
                 const word = txt.toLowerCase();
                 if (offset > 0 && lower.includes(word)) return word;
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -812,15 +812,17 @@
 
         const corrigirOrtografia = (str) => {
             if (!str) return '';
+            // Mapeamento mais robusto para evitar falsos positivos e corrigir de forma inteligente
             const correcoes = {
-                'sao': 'São', 'sebastiao': 'Sebastião', 'jose': 'José', 'joao': 'João', 
-                'conceicao': 'Conceição', 'vitoria': 'Vitória', 'praca': 'Praça', 'acude': 'Açude',
-                'antonio': 'Antônio', 'maria': 'Maria', 'francisco': 'Francisco', 'francisca': 'Francisca',
-                'luiz': 'Luiz', 'gonzaga': 'Gonzaga', 'pereira': 'Pereira', 'silva': 'Silva', 
-                'souza': 'Souza', 'santos': 'Santos', 'oliveira': 'Oliveira', 'tv': 'Tv', 
-                'av': 'Av', 'r': 'Rua', 'trav': 'Travessa', 'sen': 'Senador'
+                'rua': 'Rua', 'r ': 'Rua ', 'av': 'Av', 'avenida': 'Avenida', 'praca': 'Praça', 'travessa': 'Travessa', 'trav': 'Travessa',
+                'sao': 'São', 'sebastiao': 'Sebastião', 'jose': 'José', 'joao': 'João', 'maria': 'Maria',
+                'conceicao': 'Conceição', 'vitoria': 'Vitória', 'acude': 'Açude', 'antonio': 'Antônio',
+                'francisco': 'Francisco', 'francisca': 'Francisca', 'luiz': 'Luiz', 'gonzaga': 'Gonzaga',
+                'pereira': 'Pereira', 'silva': 'Silva', 'souza': 'Souza', 'santos': 'Santos', 'oliveira': 'Oliveira',
+                'tv': 'Tv', 'sen': 'Senador', 'dr': 'Dr.', 'dra': 'Dra.', 'gal': 'General', 'pres': 'Presidente'
             };
             let correctedStr = str;
+            // Itera sobre as correções para aplicar de forma segura (palavras inteiras)
             Object.keys(correcoes).forEach(key => {
                 const regex = new RegExp(`\\b${key}\\b`, 'gi');
                 correctedStr = correctedStr.replace(regex, correcoes[key]);
@@ -853,8 +855,6 @@
         }
 
         // --- HTML TEMPLATES ---
-        // REQ-3: Validação de Campo "N°"
-        // Alterado o input 'numero' para remover 'S/N' e aceitar apenas números.
         const createVisitaCardHTML = (index) => `
             <div class="card visita-card" data-index="${index}">
                 <header class="flex items-center justify-between p-3 cursor-pointer card-header group" data-toggle="card-content-${index}">
@@ -880,9 +880,9 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-x-3">
-                            <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input quarteirao mt-1 text-center"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" class="form-input quarteirao mt-1 text-center"></div>
                             <div><label class="text-sm font-bold text-gray-500">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
-                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" inputmode="numeric" class="form-input numero mt-1 text-center" placeholder="Nº"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" class="form-input numero mt-1 text-center is-filled" value="S/N"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-x-3">
                             <div><label class="text-sm font-bold text-gray-500">Imóvel</label><select class="form-select imovel mt-1" required><option value="" disabled selected></option><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
@@ -891,10 +891,10 @@
                         <div class="border-t border-gray-200 pt-4 mt-4">
                             <p class="text-center text-sm font-bold text-gray-500 mb-2">Resultados</p>
                             <div class="grid grid-cols-3 gap-2">
-                                <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input elim mt-1 text-center" placeholder="0"></div>
+                                <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" class="form-input elim mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Trat.</label><button type="button" class="toggle-check tratado mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Larvicida</label><select class="form-select gram mt-1 text-center"></select></div>
-                                <div class="text-center"><label class="text-xs font-medium">Dep.</label><input type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input dep mt-1 text-center" placeholder="0"></div>
+                                <div class="text-center"><label class="text-xs font-medium">Dep.</label><input type="number" min="0" class="form-input dep mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
                             </div>
@@ -982,7 +982,12 @@
             const preview = cardElement.querySelector('.logradouro-preview');
 
             const quarteiraoPart = quarteirao ? `Quart. ${quarteirao}` : '';
-            const logradouroPart = logradouro ? `${logradouro}, ${numero || 'S/N'}` : '';
+            
+            // Apply formatting and handle S/N for the preview
+            const numeroPreview = (numero && numero.toUpperCase() !== 'S/N') ? numero : 'S/N';
+            const formattedLogradouro = logradouro ? formatAndCorrectText(logradouro) : '';
+            const logradouroPart = formattedLogradouro ? `${formattedLogradouro}, ${numeroPreview}` : '';
+
             const fullPreviewText = [quarteiraoPart, logradouroPart].filter(Boolean).join(' - ');
             
             preview.textContent = fullPreviewText || 'Novo Imóvel';
@@ -995,7 +1000,9 @@
             let hasManualInput = false;
             requiredSelectors.forEach(sel => {
                 const input = cardElement.querySelector(sel);
-                if (input.value.trim() !== '') filledCount++;
+                if (input.value.trim() !== '' && (sel !== '.numero' || input.value.toUpperCase() !== 'S/N')) {
+                    filledCount++;
+                }
                 if (input.dataset.manualInput === 'true') hasManualInput = true;
             });
 
@@ -1244,14 +1251,16 @@
                         if (el.classList.contains('toggle-check')) {
                             el.classList.toggle('is-checked', !!visitData[key]);
                         } else { 
-                            // REQ-3: Handle old "S/N" data from localStorage
-                            if (key === 'numero') {
-                                el.value = (visitData[key] === 'S/N' || !visitData[key]) ? '' : visitData[key];
-                            } else {
-                                el.value = visitData[key] || ''; 
+                            el.value = visitData[key] || ''; 
+                            if (key === 'numero' && !visitData[key]) {
+                                el.value = 'S/N';
                             }
                         }
-                        if (el.value) el.classList.add('is-filled');
+                        if (el.value && (key !== 'numero' || el.value.toUpperCase() !== 'S/N')) {
+                           el.classList.add('is-filled');
+                        } else if (key === 'numero' && el.value.toUpperCase() === 'S/N') {
+                           el.classList.add('is-filled');
+                        }
                     }
                 });
                 updateToggleHTML(card.querySelector('.foco'));
@@ -2085,41 +2094,34 @@
         if (mainContent) {
             mainContent.addEventListener('input', (e) => {
                 const target = e.target;
+
+                // General numeric validation for inputs that should only contain numbers
+                if (target.matches('.quarteirao, .elim, .dep, #totalImoveis')) {
+                    target.value = target.value.replace(/[^0-9]/g,'');
+                }
                 
-                // REQ-3: Validação de Campo "N°" (implementado aqui)
+                // Specific validation for the property number field, allowing only digits
                 if (target.matches('.numero')) {
-                    const originalValue = target.value;
-                    const sanitizedValue = originalValue.replace(/\D/g, ''); // Permite apenas dígitos
-                    if (originalValue !== sanitizedValue) {
-                        showToast("Somente números são permitidos neste campo.");
-                        target.value = sanitizedValue;
-                    }
+                    target.value = target.value.replace(/\D/g, '');
                 }
 
                 if (target.matches('.form-input, .form-select')) {
                     target.dataset.manualInput = 'true';
-                    target.classList.toggle('is-filled', target.value.trim() !== '');
+                    target.classList.toggle('is-filled', target.value.trim() !== '' && target.value.toUpperCase() !== 'S/N');
                 }
                 
-                // Debounce saving to avoid issues with partial input
-                 if (target.matches('.quarteirao, .numero, .elim, .dep')) {
-                    debounce(saveData, 500);
-                } else {
-                    saveData();
-                }
+                debounce(saveData, 300);
 
                 const card = target.closest('.visita-card');
                 if (card) updateCardStatus(card);
                 if (target.closest('#info-dia-section')) checkHeaderCompletion();
                 updateAndRenderSummary();
                 
-                // REQ-1: Replicação Automática de Dados (implementado aqui)
-                // Helper para replicação
+                // Auto-replication logic
                 const replicateValue = (selector, value, startIndex) => {
                     const allCards = document.querySelectorAll('.visita-card');
                     for (let i = startIndex; i < allCards.length; i++) {
                         const inputToUpdate = allCards[i].querySelector(selector);
-                        // Apenas atualiza se o campo não foi preenchido manualmente
                         if (inputToUpdate && !inputToUpdate.dataset.manualInput) {
                              inputToUpdate.value = value;
                              if (value) inputToUpdate.classList.add('is-filled');
@@ -2129,23 +2131,16 @@
                     }
                 };
 
-                // Replicação do Bairro Principal
                 if (target.id === 'bairro') {
                     replicateValue('.bairro-imovel', target.value, 0);
                 }
 
-                // Replicação para campos dentro dos cards
                 if (card) {
                     const cardIndex = Array.from(visitasContainer.children).indexOf(card);
-                    if (target.matches('.bairro-imovel')) {
-                        replicateValue('.bairro-imovel', target.value, cardIndex + 1);
-                    } else if (target.matches('.logradouro')) {
-                        replicateValue('.logradouro', target.value, cardIndex + 1);
-                    } else if (target.matches('.quarteirao')) {
-                        replicateValue('.quarteirao', target.value, cardIndex + 1);
-                    } else if (target.matches('.lado')) {
-                        replicateValue('.lado', target.value, cardIndex + 1);
-                    }
+                    if (target.matches('.bairro-imovel')) replicateValue('.bairro-imovel', target.value, cardIndex + 1);
+                    else if (target.matches('.logradouro')) replicateValue('.logradouro', target.value, cardIndex + 1);
+                    else if (target.matches('.quarteirao')) replicateValue('.quarteirao', target.value, cardIndex + 1);
+                    else if (target.matches('.lado')) replicateValue('.lado', target.value, cardIndex + 1);
                 }
             });
             
@@ -2158,7 +2153,7 @@
                         if (header.getAttribute('data-expanded') === 'true') header.click();
                     }
                 }
-                if (target.matches('input[type="text"]') && target.value) {
+                if (target.matches('input[type="text"]') && target.value && !target.matches('.numero')) {
                     target.value = target.id === 'estado' && target.value.length === 2 ? target.value.toUpperCase() : formatAndCorrectText(target.value);
                 }
                 
@@ -2173,7 +2168,24 @@
         }
         
         if (visitasContainer) {
-            // REQ-2: Contagem Automática de Quarteirões Concluídos
+            visitasContainer.addEventListener('focusin', (e) => {
+                const target = e.target;
+                if (target.matches('.numero') && target.value.toUpperCase() === 'S/N') {
+                    target.value = '';
+                    target.classList.remove('is-filled');
+                }
+                const card = e.target.closest('.visita-card');
+                if(card) fixedPropertyInfo.textContent = `Imóvel: ${card.querySelector('.logradouro').value || '...'}, ${card.querySelector('.numero').value || '...'}`;
+            });
+
+            visitasContainer.addEventListener('focusout', (e) => {
+                const target = e.target;
+                if (target.matches('.numero') && target.value.trim() === '') {
+                    target.value = 'S/N';
+                    target.classList.add('is-filled');
+                }
+            });
+
             visitasContainer.addEventListener('change', (e) => {
                 if (e.target.matches('.quarteirao')) {
                     const card = e.target.closest('.visita-card');
@@ -2197,11 +2209,6 @@
                 }
             });
 
-            visitasContainer.addEventListener('focusin', (e) => {
-                const card = e.target.closest('.visita-card');
-                if(card) fixedPropertyInfo.textContent = `Imóvel: ${card.querySelector('.logradouro').value || '...'}, ${card.querySelector('.numero').value || '...'}`;
-            });
-
             visitasContainer.addEventListener('click', (e) => {
                 const header = e.target.closest('.card-header');
                 if (header) {
@@ -2218,7 +2225,6 @@
                     updateAndRenderSummary();
                     saveData();
                 }
-                // Handle "Concluir Quarteirão" button click
                 if (e.target.matches('.concluir-quarteirao-btn')) {
                     const card = e.target.closest('.visita-card');
                     const bairro = card.querySelector('.bairro-imovel').value.trim();
@@ -2228,7 +2234,6 @@
                         lastCompletedQuarteirao = parseInt(quarteirao, 10);
                         updateAndRenderSummary();
                         showToast(`Quarteirão ${quarteirao} concluído!`);
-                        // Automatically add and pre-fill the next card
                         addVisitaCard();
                         visitasContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     } else {
