@@ -202,6 +202,16 @@
             pointer-events: none;
         }
         #toast-notification.show { top: 40px; opacity: 1; }
+
+        .summary-item .edit-summary-icon {
+            display: none; /* Hidden by default */
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
+        .summary-item:hover .edit-summary-icon {
+            display: inline-block; /* Show on hover */
+        }
     </style>
 </head>
 
@@ -213,10 +223,10 @@
             <div class="container mx-auto">
                 <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-4 glow-text">ACE FLOW</h1>
                 <h2 class="max-w-4xl mx-auto text-2xl md:text-3xl font-semibold mb-6 text-text-dark">
-                    Sua ferramenta otimizada e inteligente no combate ao vetor da Dengue, Zika e Chikungunya.
+                    Inteligência de Campo para o Agente de Endemias Moderno.
                 </h2>
                 <p class="max-w-3xl mx-auto text-lg md:text-xl text-text-muted">
-                    A plataforma digital completa para os Agentes de Combate às Endemias e Coordenadores que buscam eficiência, precisão e inteligência para proteger a comunidade. Saia das folhas de papel e modernize seu trabalho, ganhe tempo e melhore seu desempenho.
+                    Abandone o papel. Adote a eficiência. O ACE Flow é a plataforma digital que automatiza, corrige e otimiza seu trabalho, transformando dados de campo em ações estratégicas para proteger a comunidade.
                 </p>
             </div>
         </header>
@@ -224,38 +234,23 @@
         <div>
             <section class="py-20 md:py-28 px-4">
                 <div class="container mx-auto text-center">
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-4">Uma Plataforma, Todas as Soluções</h2>
-                    <p class="text-xl text-text-muted mb-16 max-w-3xl mx-auto">Do trabalho de campo à gestão estratégica, o ACE Flow tem tudo que sua equipe precisa para ser mais eficiente.</p>
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-4">Sua Rotina, Reimaginada.</h2>
+                    <p class="text-xl text-text-muted mb-16 max-w-3xl mx-auto">Ferramentas inteligentes projetadas para eliminar o retrabalho e maximizar seu impacto em campo.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div class="feature-card-new fade-in-up">
-                            <div class="feature-icon" style="background-color: #fef3c7;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m12 6-2 4h4l-2 4"/><path d="m12 14 2 4h-4l2-4"/></svg></div>
-                            <h3 class="text-xl font-bold mb-2">Preenchimento Inteligente</h3>
-                            <p class="text-text-muted">Nossa tecnologia antecipa seus próximos passos, replicando informações e garantindo registros rápidos e consistentes.</p>
+                            <div class="feature-icon" style="background-color: #fef3c7;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Preenchimento Autônomo</h3>
+                            <p class="text-text-muted">Nossa IA aprende seus padrões, corrige nomes de ruas e evita duplicatas automaticamente, garantindo dados limpos e consistentes.</p>
                         </div>
                         <div class="feature-card-new fade-in-up" style="transition-delay: 0.1s;">
-                            <div class="feature-icon" style="background-color: #dcfce7;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></div>
-                            <h3 class="text-xl font-bold mb-2">Salvamento Automático</h3>
-                            <p class="text-text-muted">Seu progresso é salvo no histórico ao finalizar cada imóvel, garantindo que nenhum dado seja perdido.</p>
+                            <div class="feature-icon" style="background-color: #dcfce7;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Dados Seguros e Oficiais</h3>
+                            <p class="text-text-muted">Com um clique, seus registros diários são salvos permanentemente no histórico e na sua área de trabalho, prontos para a geração de PDFs.</p>
                         </div>
                         <div class="feature-card-new fade-in-up" style="transition-delay: 0.2s;">
-                            <div class="feature-icon" style="background-color: #e0e7ff;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></div>
-                            <h3 class="text-xl font-bold mb-2">Experiência de App Real</h3>
-                            <p class="text-text-muted">Instale no seu celular para uma experiência em tela cheia, 100% offline e sem perda de dados.</p>
-                        </div>
-                        <div class="feature-card-new fade-in-up" style="transition-delay: 0.3s;">
-                            <div class="feature-icon" style="background-color: #fee2e2;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div>
-                            <h3 class="text-xl font-bold mb-2">Relatórios e PDFs</h3>
-                            <p class="text-text-muted">Gere relatórios dinâmicos e exporte PDFs profissionais para arquivamento e prestação de contas com um clique.</p>
-                        </div>
-                        <div class="feature-card-new fade-in-up" style="transition-delay: 0.4s;">
-                            <div class="feature-icon" style="background-color: #ffedd5;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg></div>
-                            <h3 class="text-xl font-bold mb-2">Gestão da Área</h3>
-                            <p class="text-text-muted">Mapeie e gerencie sua área de trabalho com total flexibilidade. Cadastre, edite e remova imóveis manualmente.</p>
-                        </div>
-                        <div class="feature-card-new fade-in-up" style="transition-delay: 0.5s;">
-                            <div class="feature-icon" style="background-color: #d1fae5;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-                            <h3 class="text-xl font-bold mb-2">Guia de Conhecimento</h3>
-                            <p class="text-text-muted">Acesse um guia completo com dúvidas básicas e curiosidade interessantes sobre endemias, vetores e vigilância para agir com mais segurança e precisão em campo.</p>
+                            <div class="feature-icon" style="background-color: #e0e7ff;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.7 14.3C4.2 15.2 4 17.1 4 18.2v.8M18.3 14.3c1.5 1 1.7 2.8 1.7 4v.8M3 22h18M18.7 3.8C18.1 4.9 17.1 6 16 6H8c-1.1 0-2.1-1.1-2.7-2.2M12 6V2M12 2h.01"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Fluxo de Trabalho Contínuo</h3>
+                            <p class="text-text-muted">Conclua um quarteirão e o sistema prepara o próximo, sugerindo o imóvel seguinte de forma inteligente e sem repetir visitas no mesmo ciclo.</p>
                         </div>
                     </div>
                 </div>
@@ -263,7 +258,7 @@
 
             <section class="py-20 md:py-28 px-4 section-highlight">
                 <div class="container mx-auto text-center">
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-4">Modo Chefe</h2>
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-4">Modo Chefe: Gestão com IA</h2>
                     <p class="text-xl text-text-muted mb-16 max-w-3xl mx-auto">Eleve a gestão da sua equipe a um novo patamar com o poder da Inteligência Artificial.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="feature-card-new fade-in-up">
@@ -428,15 +423,17 @@
         
         <section class="card p-4 md:p-6 my-8">
             <h2 class="section-title border-b border-border-color pb-3 mb-4">Resumo Geral</h2>
-            <div id="summarySection" class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5"></div>
+            <div id="summarySection" class="space-y-6"></div>
         </section>
 
         <footer class="my-6 space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                <button id="savePdfBtn" class="btn bg-green-800 hover:bg-green-900 text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    Gerar PDF
+            <div class="grid grid-cols-1 gap-4">
+                 <button id="savePdfBtn" class="btn bg-green-800 hover:bg-green-900 text-white text-lg py-3" title="Salva os dados do dia no seu histórico permanente e gera o PDF para impressão.">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 15v-4"/><path d="M14.29 9.29L12 7l-2.29 2.29"/><path d="M12 22v-4"/></svg>
+                    Gerar PDF / Salvar Dados na Área
                 </button>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
                 <button id="reportBtn" class="btn bg-purple-900 text-white hover:bg-purple-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     Pesquisar Dados
@@ -445,7 +442,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     Minha Área
                 </button>
-                <button id="clearDayBtn" class="btn bg-red-700 hover:bg-red-800 text-white">
+                <button id="clearDayBtn" class="btn bg-red-700 hover:bg-red-800 text-white col-span-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                     Limpar Dia
                 </button>
@@ -712,7 +709,8 @@
         let fociDistributionChartInstance = null;
         let coordinatorReportData = null; // Store data for coordinator PDF export
         let debounceTimer;
-        let lastCompletedQuarteirao = null; // NEW: Stores the last completed block number
+        let lastCompletedQuarteirao = null; // Stores the last completed block number
+        let summaryOverrides = {}; // Stores manual edits for the summary
 
         // --- DOM SELECTORS ---
         const landingPage = document.getElementById('landingPage');
@@ -837,6 +835,11 @@
             toastNotification.classList.add('show');
             setTimeout(() => toastNotification.classList.remove('show'), 3000);
         };
+
+        const debounce = (func, delay) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
+        };
         
         // --- LANDING PAGE LOGIC ---
         const showApp = () => {
@@ -850,6 +853,8 @@
         }
 
         // --- HTML TEMPLATES ---
+        // REQ-3: Validação de Campo "N°"
+        // Alterado o input 'numero' para remover 'S/N' e aceitar apenas números.
         const createVisitaCardHTML = (index) => `
             <div class="card visita-card" data-index="${index}">
                 <header class="flex items-center justify-between p-3 cursor-pointer card-header group" data-toggle="card-content-${index}">
@@ -877,7 +882,7 @@
                         <div class="grid grid-cols-3 gap-x-3">
                             <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" class="form-input quarteirao mt-1 text-center"></div>
                             <div><label class="text-sm font-bold text-gray-500">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
-                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" inputmode="text" class="form-input numero mt-1 text-center is-filled" value="S/N" onfocus="if(this.value === 'S/N') this.value=''" onblur="if(this.value.trim() === '') this.value='S/N'"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" inputmode="numeric" class="form-input numero mt-1 text-center" placeholder="Nº"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-x-3">
                             <div><label class="text-sm font-bold text-gray-500">Imóvel</label><select class="form-select imovel mt-1" required><option value="" disabled selected></option><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
@@ -951,7 +956,7 @@
             newCard.querySelector('.logradouro').value = prevCard ? prevCard.querySelector('.logradouro').value : '';
             newCard.querySelector('.lado').value = prevCard ? prevCard.querySelector('.lado').value : '';
 
-            // NEW: Logic to auto-increment quarteirão
+            // Logic to auto-increment quarteirão
             if (lastCompletedQuarteirao !== null) {
                 newCard.querySelector('.quarteirao').value = lastCompletedQuarteirao + 1;
                 lastCompletedQuarteirao = null; // Reset after use
@@ -959,9 +964,9 @@
                 newCard.querySelector('.quarteirao').value = prevCard.querySelector('.quarteirao').value;
             }
 
-            ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado', '.numero'].forEach(sel => {
+            ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado'].forEach(sel => {
                 const input = newCard.querySelector(sel);
-                if (input.value && input.value !== 'S/N') {
+                if (input.value) {
                     input.classList.add('is-filled');
                 }
             });
@@ -973,11 +978,11 @@
         const updateCardStatus = (cardElement) => {
             const quarteirao = cardElement.querySelector('.quarteirao').value.trim();
             const logradouro = cardElement.querySelector('.logradouro').value.trim();
-            const numero = cardElement.querySelector('.numero').value.trim() || 'S/N';
+            const numero = cardElement.querySelector('.numero').value.trim();
             const preview = cardElement.querySelector('.logradouro-preview');
 
             const quarteiraoPart = quarteirao ? `Quart. ${quarteirao}` : '';
-            const logradouroPart = logradouro ? `${logradouro}, ${numero}` : '';
+            const logradouroPart = logradouro ? `${logradouro}, ${numero || 'S/N'}` : '';
             const fullPreviewText = [quarteiraoPart, logradouroPart].filter(Boolean).join(' - ');
             
             preview.textContent = fullPreviewText || 'Novo Imóvel';
@@ -1007,7 +1012,6 @@
                     horarioInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                     horarioInput.classList.add('is-filled');
                 }
-                // REMOVED: Automatic saving to history and sector data is now only triggered by "Gerar PDF".
             } else if (hasManualInput) {
                 statusIndicator.textContent = 'Em Preenchimento...';
                 statusIndicator.classList.add('text-orange-500'); 
@@ -1076,38 +1080,62 @@
                 progressTextEl.textContent = `${trabalhados.total} / ${dailyGoal}`;
             }
 
+            const createSummaryItem = (label, value, key) => `
+                <div class="p-3 text-center summary-item relative">
+                    <p class="font-bold text-2xl" data-summary-key="${key}">${summaryOverrides[key] ?? value}</p>
+                    <p class="text-sm text-gray-500">${label}</p>
+                    <span class="edit-summary-icon absolute top-1 right-1" data-edit-key="${key}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </span>
+                </div>`;
+
             summarySection.innerHTML = `
-                <div class="col-span-full text-center border-b border-gray-200 pb-3 mb-4">
-                    <h3 class="font-semibold text-gray-500">Detalhes dos Imóveis Trabalhados</h3>
-                </div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.residencia}</p><p class="text-sm text-gray-500">Residências</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.comercio}</p><p class="text-sm text-gray-500">Comércios</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.terrenoBaldio}</p><p class="text-sm text-gray-500">Ter. Baldios</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${trabalhados.outro}</p><p class="text-sm text-gray-500">Outros</p></div>
-                
-                <div class="p-3 text-center col-span-full bg-gray-100 rounded-2xl summary-item">
-                    <p class="font-black text-2xl">${trabalhados.total}</p>
-                    <p class="text-base font-bold text-gray-600">Total Trabalhados</p>
-                </div>
-
-                <div class="col-span-full text-center border-t border-gray-200 pt-4 mt-4 pb-3 mb-4">
-                    <h3 class="font-semibold text-gray-500">Resumo Geral da Produção</h3>
-                </div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.tratamentoFocal}</p><p class="text-sm text-gray-500">Trat. Focal</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.larvicidaGramas.toFixed(1)}g</p><p class="text-sm text-gray-500">Larvicida</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.depositosTratados}</p><p class="text-sm text-gray-500">Dep. Tratados</p></div>
-                <div class="p-3 text-center col-span-1 summary-item"><p class="font-bold text-2xl">${geral.eliminados}</p><p class="text-sm text-gray-500">Eliminados</p></div>
-                <div class="p-3 text-center col-span-full text-red-500 font-bold text-2xl">${geral.focos} <span class="text-sm">Total de Focos</span></div>
-                
-                <div class="col-span-full flex justify-center flex-wrap gap-4">
-                    <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.recusado}</p><p class="text-sm text-gray-500">Recusados</p></div>
-                    <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.fechado}</p><p class="text-sm text-gray-500">Fechados</p></div>
-                    <div class="p-3 text-center"><p class="font-bold text-2xl">${geral.recuperado}</p><p class="text-sm text-gray-500">Recuperados</p></div>
+                <div id="summary-trabalhados">
+                    <div class="col-span-full text-center border-b border-gray-200 pb-3 mb-4 relative">
+                        <h3 class="font-semibold text-gray-500">Detalhes dos Imóveis Trabalhados</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                        ${createSummaryItem('Residências', trabalhados.residencia, 'residencia')}
+                        ${createSummaryItem('Comércios', trabalhados.comercio, 'comercio')}
+                        ${createSummaryItem('Ter. Baldios', trabalhados.terrenoBaldio, 'terrenoBaldio')}
+                        ${createSummaryItem('Outros', trabalhados.outro, 'outro')}
+                    </div>
+                    <div class="p-3 mt-4 text-center col-span-full bg-gray-100 rounded-2xl summary-item relative">
+                        <p class="font-black text-2xl" data-summary-key="totalTrabalhados">${summaryOverrides.totalTrabalhados ?? trabalhados.total}</p>
+                        <p class="text-base font-bold text-gray-600">Total Trabalhados</p>
+                         <span class="edit-summary-icon absolute top-1 right-1" data-edit-key="totalTrabalhados">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </span>
+                    </div>
                 </div>
 
-                <div class="col-span-full flex justify-center gap-4">
-                    <div class="p-3 text-center"><p class="font-bold text-2xl">${quarteiroes.trabalhados}</p><p class="text-sm text-gray-500">Quarteirões Trabalhados</p></div>
-                    <div class="p-3 text-center"><p class="font-bold text-2xl">${quarteiroes.concluidos}</p><p class="text-sm text-gray-500">Quarteirões Concluídos</p></div>
+                <div id="summary-geral" class="mt-6">
+                    <div class="col-span-full text-center border-t border-gray-200 pt-4 mt-4 pb-3 mb-4 relative">
+                        <h3 class="font-semibold text-gray-500">Resumo Geral da Produção</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                        ${createSummaryItem('Trat. Focal', geral.tratamentoFocal, 'tratamentoFocal')}
+                        ${createSummaryItem('Larvicida', `${geral.larvicidaGramas.toFixed(1)}g`, 'larvicidaGramas')}
+                        ${createSummaryItem('Dep. Tratados', geral.depositosTratados, 'depositosTratados')}
+                        ${createSummaryItem('Eliminados', geral.eliminados, 'eliminados')}
+                        ${createSummaryItem('Recusados', geral.recusado, 'recusado')}
+                        ${createSummaryItem('Fechados', geral.fechado, 'fechado')}
+                        ${createSummaryItem('Recuperados', geral.recuperado, 'recuperado')}
+                        <div class="p-3 text-center col-span-1 summary-item relative text-red-500">
+                            <p class="font-bold text-2xl" data-summary-key="focos">${summaryOverrides.focos ?? geral.focos}</p>
+                            <p class="text-sm">Total de Focos</p>
+                            <span class="edit-summary-icon absolute top-1 right-1" data-edit-key="focos">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="summary-quarteiroes" class="mt-6">
+                     <div class="grid grid-cols-2 gap-4">
+                        ${createSummaryItem('Quarteirões Trabalhados', quarteiroes.trabalhados, 'quarteiroesTrabalhados')}
+                        ${createSummaryItem('Quarteirões Concluídos', quarteiroes.concluidos, 'quarteiroesConcluidos')}
+                    </div>
                 </div>
             `;
         };
@@ -1216,9 +1244,14 @@
                         if (el.classList.contains('toggle-check')) {
                             el.classList.toggle('is-checked', !!visitData[key]);
                         } else { 
-                            el.value = visitData[key] || ''; 
+                            // REQ-3: Handle old "S/N" data from localStorage
+                            if (key === 'numero') {
+                                el.value = (visitData[key] === 'S/N' || !visitData[key]) ? '' : visitData[key];
+                            } else {
+                                el.value = visitData[key] || ''; 
+                            }
                         }
-                        if (el.value && el.value !== 'S/N') el.classList.add('is-filled');
+                        if (el.value) el.classList.add('is-filled');
                     }
                 });
                 updateToggleHTML(card.querySelector('.foco'));
@@ -1433,7 +1466,29 @@
             ];
             
             const summaryData = getSummaryData();
-            const { trabalhados, geral, quarteiroes } = summaryData;
+            
+            // Use overrides if they exist
+            const trabalhados = {
+                residencia: summaryOverrides.residencia ?? summaryData.trabalhados.residencia,
+                comercio: summaryOverrides.comercio ?? summaryData.trabalhados.comercio,
+                terrenoBaldio: summaryOverrides.terrenoBaldio ?? summaryData.trabalhados.terrenoBaldio,
+                outro: summaryOverrides.outro ?? summaryData.trabalhados.outro,
+                total: summaryOverrides.totalTrabalhados ?? summaryData.trabalhados.total,
+            };
+            const geral = {
+                tratamentoFocal: summaryOverrides.tratamentoFocal ?? summaryData.geral.tratamentoFocal,
+                larvicidaGramas: (summaryOverrides.larvicidaGramas ?? String(summaryData.geral.larvicidaGramas.toFixed(1)) + 'g').replace('g',''),
+                depositosTratados: summaryOverrides.depositosTratados ?? summaryData.geral.depositosTratados,
+                eliminados: summaryOverrides.eliminados ?? summaryData.geral.eliminados,
+                focos: summaryOverrides.focos ?? summaryData.geral.focos,
+                recusado: summaryOverrides.recusado ?? summaryData.geral.recusado,
+                fechado: summaryOverrides.fechado ?? summaryData.geral.fechado,
+                recuperado: summaryOverrides.recuperado ?? summaryData.geral.recuperado,
+            };
+            const quarteiroes = {
+                trabalhados: summaryOverrides.quarteiroesTrabalhados ?? summaryData.quarteiroes.trabalhados,
+                concluidos: summaryOverrides.quarteiroesConcluidos ?? summaryData.quarteiroes.concluidos,
+            };
             
             const detalhesData = [
                 ['Residências', trabalhados.residencia], ['Comércios', trabalhados.comercio],
@@ -1442,7 +1497,7 @@
             ];
 
             const producaoData = [
-                ['Tratamento Focal', geral.tratamentoFocal], ['Larvicida', `${geral.larvicidaGramas.toFixed(1)}g`],
+                ['Tratamento Focal', geral.tratamentoFocal], ['Larvicida', `${geral.larvicidaGramas}g`],
                 ['Depósitos Tratados', geral.depositosTratados], ['Eliminados', geral.eliminados],
                 ['Quarteirões Trabalhados', quarteiroes.trabalhados], ['Quarteirões Concluídos', quarteiroes.concluidos],
                 ['Total de Focos', geral.focos], ['Recusados', geral.recusado],
@@ -1723,7 +1778,7 @@
             sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${quarteirao}`;
             sectorModalContent.innerHTML = contentHTML;
             sectorBackBtn.classList.remove('hidden');
-            sectorModalFooter.innerHTML = ''; // Removed the old "Concluir Quarteirão" button from here
+            sectorModalFooter.innerHTML = '';
         };
 
         const showPropertyForm = (property = null) => {
@@ -1809,23 +1864,13 @@
             sectorNavigationStack.pop(); // Remove current view
             const lastView = sectorNavigationStack[sectorNavigationStack.length - 1];
             
-            // Temporarily remove the last view to render the one before it
-            sectorNavigationStack.pop(); 
-
             if (lastView) {
                 if (lastView.view === 'neighborhoods') {
-                    displayMyArea();
+                    renderNeighborhoods();
                 } else if (lastView.view === 'blocks') {
-                    renderNeighborhoods(); // Go back to neighborhood list
+                    renderBlocks(lastView.bairro);
                 } else if (lastView.view === 'properties') {
-                    renderBlocks(lastView.bairro); // Go back to block list
-                } else if (lastView.view === 'form') {
-                    const fromView = lastView.from;
-                    if (fromView.view === 'properties') {
-                       renderPropertiesForBlock(fromView.bairro, fromView.quarteirao);
-                    } else {
-                       renderNeighborhoods();
-                    }
+                    renderPropertiesForBlock(lastView.bairro, lastView.quarteirao);
                 }
             } else {
                 closeSectorModalBtn.click();
@@ -1952,9 +1997,10 @@
         
         if (document.getElementById('clearDayBtn')) {
             document.getElementById('clearDayBtn').addEventListener('click', () => {
-                showModal("Limpar os dados do dia? Esta ação NÃO salva no histórico. Use 'Gerar PDF' para salvar.", () => {
+                showModal("Limpar os dados do dia? Esta ação NÃO salva no histórico. Use 'Gerar PDF / Salvar' para oficializar os dados.", () => {
                     saveLastPropertyReminder();
                     localStorage.removeItem('aceFlowDailyData');
+                    summaryOverrides = {}; // Clear manual overrides
                     initAppLogic(); // Reloads data and summary
                     displayLastPropertyReminder();
                     nextPropertySuggestionContainer.classList.add('hidden');
@@ -1993,8 +2039,7 @@
                         localStorage.setItem(sectorKey, JSON.stringify(sectorData));
                         showToast("Imóvel excluído.");
                         // Refresh the view
-                        const currentView = sectorNavigationStack[sectorNavigationStack.length - 1];
-                        sectorNavigationStack.pop();
+                        const currentView = sectorNavigationStack.pop(); // remove current view
                         renderPropertiesForBlock(currentView.bairro, currentView.quarteirao);
                     }
                     return;
@@ -2040,15 +2085,68 @@
         if (mainContent) {
             mainContent.addEventListener('input', (e) => {
                 const target = e.target;
+                
+                // REQ-3: Validação de Campo "N°" (implementado aqui)
+                if (target.matches('.numero')) {
+                    const originalValue = target.value;
+                    const sanitizedValue = originalValue.replace(/\D/g, ''); // Permite apenas dígitos
+                    if (originalValue !== sanitizedValue) {
+                        showToast("Somente números são permitidos neste campo.");
+                        target.value = sanitizedValue;
+                    }
+                }
+
                 if (target.matches('.form-input, .form-select')) {
                     target.dataset.manualInput = 'true';
                     target.classList.toggle('is-filled', target.value.trim() !== '');
                 }
-                saveData(); 
+                
+                // Debounce saving to avoid issues with partial input
+                 if (target.matches('.quarteirao, .numero, .elim, .dep')) {
+                    debounce(saveData, 500);
+                } else {
+                    saveData();
+                }
+
                 const card = target.closest('.visita-card');
                 if (card) updateCardStatus(card);
                 if (target.closest('#info-dia-section')) checkHeaderCompletion();
                 updateAndRenderSummary();
+                
+                // REQ-1: Replicação Automática de Dados (implementado aqui)
+                // Helper para replicação
+                const replicateValue = (selector, value, startIndex) => {
+                    const allCards = document.querySelectorAll('.visita-card');
+                    for (let i = startIndex; i < allCards.length; i++) {
+                        const inputToUpdate = allCards[i].querySelector(selector);
+                        // Apenas atualiza se o campo não foi preenchido manualmente
+                        if (inputToUpdate && !inputToUpdate.dataset.manualInput) {
+                             inputToUpdate.value = value;
+                             if (value) inputToUpdate.classList.add('is-filled');
+                             else inputToUpdate.classList.remove('is-filled');
+                             updateCardStatus(allCards[i]);
+                        }
+                    }
+                };
+
+                // Replicação do Bairro Principal
+                if (target.id === 'bairro') {
+                    replicateValue('.bairro-imovel', target.value, 0);
+                }
+
+                // Replicação para campos dentro dos cards
+                if (card) {
+                    const cardIndex = Array.from(visitasContainer.children).indexOf(card);
+                    if (target.matches('.bairro-imovel')) {
+                        replicateValue('.bairro-imovel', target.value, cardIndex + 1);
+                    } else if (target.matches('.logradouro')) {
+                        replicateValue('.logradouro', target.value, cardIndex + 1);
+                    } else if (target.matches('.quarteirao')) {
+                        replicateValue('.quarteirao', target.value, cardIndex + 1);
+                    } else if (target.matches('.lado')) {
+                        replicateValue('.lado', target.value, cardIndex + 1);
+                    }
+                }
             });
             
             mainContent.addEventListener('blur', (e) => {
@@ -2064,37 +2162,6 @@
                     target.value = target.id === 'estado' && target.value.length === 2 ? target.value.toUpperCase() : formatAndCorrectText(target.value);
                 }
                 
-                const replicationClasses = ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado'];
-                const targetIsReplicable = replicationClasses.some(c => target.matches(c)) || target.matches('#bairro');
-                
-                // MODIFIED: Logic for data replication
-                if (targetIsReplicable) {
-                    const valueToReplicate = target.value;
-                    let sourceIndex = -1;
-                    let fieldClass = '';
-                    if (target.matches('#bairro')) { 
-                        fieldClass = '.bairro-imovel'; 
-                    } else {
-                        const sourceCard = target.closest('.visita-card');
-                        sourceIndex = sourceCard ? parseInt(sourceCard.dataset.index, 10) : -1;
-                        fieldClass = replicationClasses.find(c => target.matches(c));
-                    }
-                    if (fieldClass) {
-                        document.querySelectorAll('.visita-card').forEach((card, index) => {
-                            if (index > sourceIndex) {
-                                const fieldToUpdate = card.querySelector(fieldClass);
-                                // This now overwrites existing data in subsequent cards
-                                if (fieldToUpdate) {
-                                    fieldToUpdate.value = valueToReplicate;
-                                    fieldToUpdate.dataset.manualInput = 'false'; // Mark as auto-filled
-                                    fieldToUpdate.classList.toggle('is-filled', !!valueToReplicate);
-                                    updateCardStatus(card);
-                                }
-                            }
-                        });
-                    }
-                }
-
                 const card = target.closest('.visita-card');
                 if (card) updateCardStatus(card);
                 if (target.closest('#info-dia-section')) checkHeaderCompletion();
@@ -2106,6 +2173,30 @@
         }
         
         if (visitasContainer) {
+            // REQ-2: Contagem Automática de Quarteirões Concluídos
+            visitasContainer.addEventListener('change', (e) => {
+                if (e.target.matches('.quarteirao')) {
+                    const card = e.target.closest('.visita-card');
+                    const cardIndex = Array.from(visitasContainer.children).indexOf(card);
+
+                    if (cardIndex > 0) {
+                        const prevCard = visitasContainer.children[cardIndex - 1];
+                        const prevQuarteiraoInput = prevCard.querySelector('.quarteirao');
+                        const prevBairroInput = prevCard.querySelector('.bairro-imovel');
+                        
+                        const currentQuarteirao = parseInt(e.target.value, 10);
+                        const prevQuarteirao = parseInt(prevQuarteiraoInput.value, 10);
+                        const prevBairro = prevBairroInput.value.trim();
+
+                        if (prevBairro && !isNaN(prevQuarteirao) && !isNaN(currentQuarteirao) && currentQuarteirao > prevQuarteirao) {
+                            setBlockAsCompleted(prevBairro, prevQuarteirao.toString());
+                            showToast(`Quarteirão ${prevQuarteirao} do bairro ${prevBairro} marcado como concluído.`);
+                            updateAndRenderSummary();
+                        }
+                    }
+                }
+            });
+
             visitasContainer.addEventListener('focusin', (e) => {
                 const card = e.target.closest('.visita-card');
                 if(card) fixedPropertyInfo.textContent = `Imóvel: ${card.querySelector('.logradouro').value || '...'}, ${card.querySelector('.numero').value || '...'}`;
@@ -2127,7 +2218,7 @@
                     updateAndRenderSummary();
                     saveData();
                 }
-                // NEW: Handle "Concluir Quarteirão" button click
+                // Handle "Concluir Quarteirão" button click
                 if (e.target.matches('.concluir-quarteirao-btn')) {
                     const card = e.target.closest('.visita-card');
                     const bairro = card.querySelector('.bairro-imovel').value.trim();
@@ -2137,6 +2228,9 @@
                         lastCompletedQuarteirao = parseInt(quarteirao, 10);
                         updateAndRenderSummary();
                         showToast(`Quarteirão ${quarteirao} concluído!`);
+                        // Automatically add and pre-fill the next card
+                        addVisitaCard();
+                        visitasContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     } else {
                         showToast("Preencha o bairro e o quarteirão para concluir.");
                     }
@@ -2377,6 +2471,33 @@
             const allFilled = [...infoDiaSection.querySelectorAll('input, select')].every(input => input.value.trim() !== '');
             infoDiaSection.classList.toggle('card-completed', allFilled);
         };
+
+        summarySection.addEventListener('click', (e) => {
+            const editIcon = e.target.closest('.edit-summary-icon');
+            if (editIcon) {
+                const key = editIcon.dataset.editKey;
+                const valueElement = summarySection.querySelector(`[data-summary-key="${key}"]`);
+                const currentValue = valueElement.textContent;
+
+                const inputHTML = `<input type="text" value="${currentValue.replace('g','')}" class="form-input text-center p-1 h-8 w-24" data-summary-input-key="${key}">`;
+                const parent = valueElement.parentElement;
+                
+                parent.innerHTML = inputHTML;
+                const input = parent.querySelector('input');
+                input.focus();
+                input.select();
+
+                input.addEventListener('blur', () => {
+                    summaryOverrides[key] = input.value;
+                    updateAndRenderSummary();
+                });
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        input.blur();
+                    }
+                });
+            }
+        });
         
         const initAppLogic = () => {
             loadData(); 
