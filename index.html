@@ -819,7 +819,7 @@
                 'conceicao': 'Conceição', 'vitoria': 'Vitória', 'acude': 'Açude', 'antonio': 'Antônio',
                 'francisco': 'Francisco', 'francisca': 'Francisca', 'luiz': 'Luiz', 'gonzaga': 'Gonzaga',
                 'pereira': 'Pereira', 'silva': 'Silva', 'souza': 'Souza', 'santos': 'Santos', 'oliveira': 'Oliveira',
-                'tv': 'Tv', 'sen': 'Senador', 'dr': 'Dr.', 'dra': 'Dra.', 'gal': 'General', 'pres': 'Presidente'
+                'tv': 'Tv.', 'sen': 'Senador', 'dr': 'Dr.', 'dra': 'Dra.', 'gal': 'General', 'pres': 'Presidente'
             };
             let correctedStr = str;
             // Itera sobre as correções para aplicar de forma segura (palavras inteiras)
@@ -998,9 +998,12 @@
             
             let filledCount = 0;
             let hasManualInput = false;
+            // CORRECTED: Check if any required field is filled.
             requiredSelectors.forEach(sel => {
                 const input = cardElement.querySelector(sel);
-                if (input.value.trim() !== '' && (sel !== '.numero' || input.value.toUpperCase() !== 'S/N')) {
+                // A field is considered filled if its value is not empty.
+                // The 'numero' field defaults to 'S/N', which is not empty, so it's counted as filled.
+                if (input.value.trim() !== '') {
                     filledCount++;
                 }
                 if (input.dataset.manualInput === 'true') hasManualInput = true;
@@ -2105,9 +2108,10 @@
                     target.value = target.value.replace(/\D/g, '');
                 }
 
+                // CORRECTED: Check if field is filled based on whether it's empty or not.
                 if (target.matches('.form-input, .form-select')) {
                     target.dataset.manualInput = 'true';
-                    target.classList.toggle('is-filled', target.value.trim() !== '' && target.value.toUpperCase() !== 'S/N');
+                    target.classList.toggle('is-filled', target.value.trim() !== '');
                 }
                 
                 debounce(saveData, 300);
