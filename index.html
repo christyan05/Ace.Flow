@@ -1316,18 +1316,10 @@
             if (!username) return [];
             const sectorKey = `aceFlowSectorData_${username}`;
             const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
-            return Object.values(sectorData.properties).sort((a,b) => {
-                const bairroComp = a.bairro.localeCompare(b.bairro);
-                if (bairroComp !== 0) return bairroComp;
-                const quarteiraoComp = parseInt(a.quarteirao) - parseInt(b.quarteirao);
-                if (quarteiraoComp !== 0) return quarteiraoComp;
-                const logradouroComp = a.logradouro.localeCompare(b.logradouro);
-                if (logradouroComp !== 0) return logradouroComp;
-                const numA = parseInt(a.numero.replace(/\D/g,''), 10) || Infinity;
-                const numB = parseInt(b.numero.replace(/\D/g,''), 10) || Infinity;
-                if (numA !== numB) return numA - numB;
-                return a.numero.localeCompare(b.numero, undefined, {numeric: true});
-            });
+            const propertiesArray = Object.values(sectorData.properties);
+            // Sort by creation time, oldest first. Handle cases where createdAt might be missing for old data.
+            propertiesArray.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            return propertiesArray;
         };
 
         const checkCycleCompletion = () => {
@@ -1667,7 +1659,8 @@
                     logradouro: formatAndCorrectText(visit.logradouro),
                     numero: visit.numero.trim().toUpperCase(),
                     lado: visit.lado,
-                    tipo: visit.imovel
+                    tipo: visit.imovel,
+                    createdAt: Date.now() // Add timestamp for new properties
                 };
                 const propertyId = `${propData.bairro}-${propData.quarteirao}-${propData.logradouro}-${propData.numero}-${propData.tipo}-${propData.lado}`.toLowerCase().replace(/\s+/g, '-');
                 if (!sectorData.properties[propertyId]) {
@@ -1712,7 +1705,6 @@
             if (neighborhoods.length > 0) {
                 contentHTML += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
                 neighborhoods.forEach(bairro => {
-                    // [MODIFICADO] Conta imóveis por bairro
                     const propertyCount = properties.filter(p => p.bairro === bairro).length;
                     contentHTML += `
                         <button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-4 w-full flex flex-col items-center justify-center sector-neighborhood-btn" data-bairro="${bairro}">
@@ -1721,10 +1713,11 @@
                         </button>`;
                 });
                 contentHTML += '</div>';
-                // [MODIFICADO] Soma total de imóveis abaixo da lista
-                contentHTML += `<div class="mt-6 p-4 bg-khaki-dark rounded-lg text-center text-white shadow-lg">
-                                    <p class="text-xl font-bold">Total Geral na Área: ${totalAllProperties} imóveis</p>
-                                </div>`;
+                // [NOVO] Soma total de imóveis abaixo da lista
+                contentHTML += `
+                    <div class="mt-6 p-4 bg-khaki-dark rounded-lg text-center text-white shadow-lg">
+                        <p class="text-xl font-bold">Total Geral na Área: ${totalAllProperties} imóveis</p>
+                    </div>`;
             } else {
                 contentHTML += '<p class="col-span-full text-center text-gray-500 py-8">Nenhum bairro cadastrado. Comece a registrar seus imóveis.</p>';
             }
@@ -1803,6 +1796,31 @@
                 contentHTML += '<tr><td colspan="6" class="text-center text-gray-500 py-8">Nenhum imóvel cadastrado para este quarteirão.</td></tr>';
             }
             contentHTML += '</tbody></table></div>';
+            
+            // [NOVO] Summary calculation
+            const summary = properties.reduce((acc, prop) => {
+                if (prop.tipo === 'R') acc.residencia++;
+                else if (prop.tipo === 'C') acc.comercio++;
+                else if (prop.tipo === 'TB') acc.terrenoBaldio++;
+                else if (prop.tipo === 'O') acc.outro++;
+                return acc;
+            }, { residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0 });
+            const totalNoQuarteirao = properties.length;
+
+            // [NOVO] Summary HTML
+            contentHTML += `
+                <div class="mt-4 p-4 bg-khaki-light border-t-2 border-khaki-base">
+                    <h3 class="text-lg font-bold text-khaki-dark text-center mb-3">Resumo do Quarteirão ${quarteirao}</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.residencia}</p><p class="text-xs text-gray-600">Residências</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.comercio}</p><p class="text-xs text-gray-600">Comércios</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.terrenoBaldio}</p><p class="text-xs text-gray-600">Ter. Baldios</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.outro}</p><p class="text-xs text-gray-600">Outros</p></div>
+                        <div class="p-2 bg-khaki-dark text-white rounded-lg shadow col-span-2 md:col-span-1"><p class="font-bold text-xl">${totalNoQuarteirao}</p><p class="text-xs">Total</p></div>
+                    </div>
+                </div>
+            `;
+
 
             sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${quarteirao}`;
             sectorModalContent.innerHTML = contentHTML;
@@ -1819,6 +1837,7 @@
             sectorModalContent.innerHTML = `
                 <div class="p-4 space-y-4 sector-view">
                     <form id="property-form" class="space-y-4" data-editing-id="${isEditing ? property.id : ''}">
+                        <input type="hidden" id="prop-createdAt" value="${isEditing ? (property.createdAt || '') : ''}">
                         <div><label class="text-sm font-bold text-gray-500">Bairro</label><input type="text" id="prop-bairro" class="form-input mt-1" value="${property?.bairro || currentView.bairro || ''}" required></div>
                         <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" id="prop-quarteirao" class="form-input mt-1" value="${property?.quarteirao || currentView.quarteirao || ''}" required></div>
                         <div><label class="text-sm font-bold text-gray-500">Logradouro</label><input type="text" id="prop-logradouro" class="form-input mt-1" value="${property?.logradouro || ''}" required></div>
@@ -1853,6 +1872,7 @@
             const username = agenteInput.value;
             const sectorKey = `aceFlowSectorData_${username}`;
             let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            const createdAtValue = document.getElementById('prop-createdAt').value;
 
             const propData = {
                 bairro: formatAndCorrectText(document.getElementById('prop-bairro').value),
@@ -1861,9 +1881,10 @@
                 numero: document.getElementById('prop-numero').value.trim().toUpperCase(),
                 lado: document.getElementById('prop-lado').value,
                 tipo: document.getElementById('prop-tipo').value,
+                createdAt: createdAtValue ? parseInt(createdAtValue, 10) : Date.now()
             };
 
-            if (Object.values(propData).some(val => !val)) {
+            if (Object.values(propData).some(val => val === '')) {
                 showToast('Por favor, preencha todos os campos.'); return;
             }
             
