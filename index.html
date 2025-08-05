@@ -964,6 +964,16 @@
                 newCard.querySelector('.quarteirao').value = prevCard.querySelector('.quarteirao').value;
             }
 
+            // [MODIFICADO] Mantém o estado do botão "Tratamento Focal"
+            if (prevCard) {
+                const prevTratadoBtn = prevCard.querySelector('.tratado');
+                if (prevTratadoBtn && prevTratadoBtn.classList.contains('is-checked')) {
+                    const newTratadoBtn = newCard.querySelector('.tratado');
+                    newTratadoBtn.classList.add('is-checked');
+                    updateToggleHTML(newTratadoBtn);
+                }
+            }
+
             ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado'].forEach(sel => {
                 const input = newCard.querySelector(sel);
                 if (input.value) {
@@ -1702,9 +1712,16 @@
             if (neighborhoods.length > 0) {
                 contentHTML += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
                 neighborhoods.forEach(bairro => {
-                    contentHTML += `<button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-6 w-full sector-neighborhood-btn" data-bairro="${bairro}">${bairro}</button>`;
+                    // [MODIFICADO] Conta imóveis por bairro
+                    const propertyCount = properties.filter(p => p.bairro === bairro).length;
+                    contentHTML += `
+                        <button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-4 w-full flex flex-col items-center justify-center sector-neighborhood-btn" data-bairro="${bairro}">
+                            <span class="font-bold text-xl">${bairro}</span>
+                            <span class="text-sm font-normal text-gray-500 mt-1">${propertyCount} imóveis</span>
+                        </button>`;
                 });
                 contentHTML += '</div>';
+                // [MODIFICADO] Soma total de imóveis abaixo da lista
                 contentHTML += `<div class="mt-6 p-4 bg-khaki-dark rounded-lg text-center text-white shadow-lg">
                                     <p class="text-xl font-bold">Total Geral na Área: ${totalAllProperties} imóveis</p>
                                 </div>`;
@@ -2012,7 +2029,7 @@
                 showModal("Limpar os dados do dia? Esta ação NÃO salva no histórico. Use 'Gerar PDF / Salvar' para oficializar os dados.", () => {
                     saveLastPropertyReminder();
                     localStorage.removeItem('aceFlowDailyData');
-                    summaryOverrides = {}; // Clear manual overrides
+                    summaryOverrides = {}; // [MODIFICADO] Limpa as edições manuais do resumo
                     initAppLogic(); // Reloads data and summary
                     displayLastPropertyReminder();
                     nextPropertySuggestionContainer.classList.add('hidden');
@@ -2103,9 +2120,9 @@
                     target.value = target.value.replace(/[^0-9]/g,'');
                 }
                 
-                // Specific validation for the property number field, allowing only digits
+                // [MODIFICADO] Validação para o campo número, permitindo dígitos e letras maiúsculas
                 if (target.matches('.numero')) {
-                    target.value = target.value.replace(/\D/g, '');
+                    target.value = target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
                 }
 
                 // CORRECTED: Check if field is filled based on whether it's empty or not.
