@@ -2872,3 +2872,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let quarteiraoAtual = null;
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'quarteirao') {
+            const novoQuarteirao = e.target.value;
+            if (quarteiraoAtual && novoQuarteirao && novoQuarteirao !== quarteiraoAtual) {
+                const campoConcluidos = document.querySelector('.quarteirao-concluido');
+                if (campoConcluidos) {
+                    let valor = parseInt(campoConcluidos.textContent) || 0;
+                    campoConcluidos.textContent = valor + 1;
+                }
+            }
+            quarteiraoAtual = novoQuarteirao;
+        }
+    });
+});
+</script>
