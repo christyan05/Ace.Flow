@@ -213,6 +213,18 @@
             display: inline-block; /* Show on hover */
         }
     </style>
+
+<style>
+.resumo-total {
+    background-color: var(--khaki-light) !important;
+    color: var(--text-dark) !important;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    display: inline-block;
+    font-weight: bold;
+}
+</style>
+
 </head>
 
 <body class="antialiased">
@@ -1816,7 +1828,7 @@
                         <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.comercio}</p><p class="text-xs text-gray-600">Comércios</p></div>
                         <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.terrenoBaldio}</p><p class="text-xs text-gray-600">Ter. Baldios</p></div>
                         <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.outro}</p><p class="text-xs text-gray-600">Outros</p></div>
-                        <div class="p-2 bg-khaki-dark text-white rounded-lg shadow col-span-2 md:col-span-1"><p class="font-bold text-xl">${totalNoQuarteirao}</p><p class="text-xs">Total</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow text-khaki-dark resumo-total rounded-lg shadow col-span-2 md:col-span-1"><p class="font-bold text-xl">${totalNoQuarteirao}</p><p class="text-xs">Total</p></div>
                     </div>
                 </div>
             `;
@@ -2050,6 +2062,24 @@
                 showModal("Limpar os dados do dia? Esta ação NÃO salva no histórico. Use 'Gerar PDF / Salvar' para oficializar os dados.", () => {
                     saveLastPropertyReminder();
                     localStorage.removeItem('aceFlowDailyData');
+// additionally clear completed blocks for the current agent (quarteirões concluídos)
+const username = agenteInput.value;
+if (username) {
+    const sectorKey = `aceFlowSectorData_${username}`;
+    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+    sectorData.completedBlocks = {};
+    localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+}
+// Reset date input to today's date
+const todayStr = new Date().toISOString().split('T')[0];
+if (document.getElementById('data')) document.getElementById('data').value = todayStr;
+// Clear treatment focal toggles on the page (visual)
+document.querySelectorAll('.toggle-check.tratado.is-checked').forEach(btn => btn.classList.remove('is-checked'));
+// Also reset summary DOM numbers immediately (safe guards)
+const qConclElem = document.querySelector('[data-summary-key="quarteiroesConcluidos"]');
+if (qConclElem) qConclElem.textContent = '0';
+const qTrabElem = document.querySelector('[data-summary-key="quarteiroesTrabalhados"]');
+if (qTrabElem) qTrabElem.textContent = '0';
                     summaryOverrides = {}; // [MODIFICADO] Limpa as edições manuais do resumo
                     initAppLogic(); // Reloads data and summary
                     displayLastPropertyReminder();
@@ -2827,3 +2857,4 @@
     </script>
 </body>
 </html>
+
