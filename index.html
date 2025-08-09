@@ -905,7 +905,7 @@
                             <div class="grid grid-cols-3 gap-2">
                                 <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" class="form-input elim mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Trat.</label><button type="button" class="toggle-check tratado mt-1"></button></div>
-                                <div class="text-center"><label class="text-xs font-medium">Larvicida</label><select class="form-select gram mt-1 text-center"></select></div>
+                                <div class="text-center"><label class="text-xs font-medium">Larvicida</label><select class="form-select gram mt-1 text-center"><option value="" disabled selected></option></select></div>
                                 <div class="text-center"><label class="text-xs font-medium">Dep.</label><input type="number" min="0" class="form-input dep mt-1 text-center" placeholder="0"></div>
                                 <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
                                 <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
@@ -2858,3 +2858,17 @@ if (qTrabElem) qTrabElem.textContent = '0';
 </body>
 </html>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('gram')) {
+            if (e.target.value && e.target.value !== '') {
+                e.target.classList.add('is-filled');
+            } else {
+                e.target.classList.remove('is-filled');
+            }
+        }
+    });
+});
+</script>
